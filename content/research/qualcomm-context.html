@@ -1,0 +1,100 @@
+<p>This chapter gives the public facts about Qualcomm and the Modular stack. The research directions in the next chapter use these facts.</p>
+
+<div class="caution"><div class="wh">CAUTION</div>
+  <p>THIS CHAPTER USES PUBLIC SOURCES ONLY. IT DOES NOT SHOW INTERNAL QUALCOMM INFORMATION. Check the rules of Qualcomm for publication before you publish work that uses internal data.</p>
+</div>
+
+<h3>1. What happened</h3>
+<p>Table R-1 gives the events in date order. A secondary source is a news report. It is not a company release.</p>
+<table>
+  <caption>Table R-1 · Events</caption>
+  <thead><tr><th>Date</th><th>Event</th><th>Source</th></tr></thead>
+  <tbody>
+    <tr><td class="mono">Oct 2025</td><td>Qualcomm presents Hexagon-MLIR at the LLVM Developers’ Meeting. Early results: Triton kernels reach up to 80 percent of hand-written kernels.</td><td>LLVM 2025 slides</td></tr>
+    <tr><td class="mono">Feb 2026</td><td>Qualcomm publishes the Hexagon-MLIR paper and a developer blog post. The stack is open source and a work in progress.</td><td>arXiv 2602.19762, Qualcomm blog</td></tr>
+    <tr><td class="mono">29 Jul 2026</td><td>Qualcomm completes its acquisition of Modular. Chris Lattner becomes a Qualcomm executive vice president. Mojo, MAX and Modular Cloud continue as products.</td><td>Qualcomm release</td></tr>
+    <tr><td class="mono">18 Aug 2026</td><td>At ModCon, Modular reports Mojo and MAX on the Qualcomm Cloud AI 100 Ultra. Mojo compiles to the Hexagon LLVM NPU backend.</td><td>Modular post</td></tr>
+    <tr><td class="mono">Aug 2026</td><td>Modular releases Mojo 1.0 and open-sources it under the Apache 2.0 license.</td><td>News report (secondary)</td></tr>
+    <tr><td class="mono">23 Sep 2026</td><td>At Snapdragon Summit, Lattner says that Qualcomm will bring the Modular platform across the Snapdragon family.</td><td>News report (secondary)</td></tr>
+  </tbody>
+</table>
+<div class="note"><span class="nh">NOTE:</span>The release gives the title of Lattner as executive vice president. One news report gives senior vice president. Use the title in the release.</div>
+
+<h3>2. What the Modular stack does on Qualcomm hardware</h3>
+<p>Table R-2 comes from the ModCon post. The post is written by the company. The figures in it are company figures.</p>
+<table>
+  <caption>Table R-2 · Targets in the ModCon post</caption>
+  <thead><tr><th>Target</th><th>Status in the post</th></tr></thead>
+  <tbody>
+    <tr><td>Cloud AI 100 Ultra</td><td>Integrated into MAX and Mojo. A card has four SoCs with 32 GB each, and each SoC has 16 NSPs. Gemma 4 31B runs across four SoCs with tensor parallelism. <code>max serve</code> serves it.</td></tr>
+    <tr><td>Hexagon NPU</td><td>Mojo compiles to the Hexagon LLVM NPU backend. HVX does the vector work, and HMX does the matrix multiplication. The post also names DMA and VTCM.</td></tr>
+    <tr><td>Dragonfly AI200</td><td>The Mojo compiler runs on the device, and GPT-2 runs. The team still validates the rest of the stack.</td></tr>
+    <tr><td>AI250 and AI300</td><td>On the roadmap. The post gives no status.</td></tr>
+    <tr><td>Snapdragon</td><td>Announced at Snapdragon Summit. The ModCon post does not list it as supported.</td></tr>
+  </tbody>
+</table>
+<p>The kernels in the post are hand-written in Mojo. They are GEMM on HMX, a GEMV path for decode on HVX, LayerNorm, softmax, attention and a paged flash-attention kernel. The post reports GPT-2 at 6.7 times its baseline after about three weeks of optimization.</p>
+
+<h3>3. What Hexagon-MLIR does</h3>
+<p>The paper describes an open-source compilation stack for the Hexagon NPU. It complements the commercial toolchains of Qualcomm. The authors call it a work in progress.</p>
+<ul>
+  <li>Inputs: PyTorch models through Torch-MLIR, and Triton kernels through triton-to-linalg.</li>
+  <li>Core dialects: linalg, tensor, scf, memref, arith, math, vector and async.</li>
+  <li>Passes: operator fusion, tiling with copies from DDR to TCM, HVX vectorization and multithreading.</li>
+  <li>More passes: double buffering with asynchronous DMA, and a path for matrix operations to a matrix engine.</li>
+  <li>Reported results: per-kernel speedups against a non-vectorized baseline. Examples: GELU in float16 at 63.9 times, RMS-norm in float16 at 46.5 times, flash attention in float32 at 4.7 times.</li>
+  <li>Limits: the paper has no end-to-end model results. It does not describe all passes. Some operations need control flow.</li>
+  <li>Hardware: Qualcomm says the stack works today on a single Hexagon NPU, tested on v73, v75 and v79.</li>
+</ul>
+
+<h3>4. Two compiler paths to one NPU</h3>
+<p>Figure R-1 shows what the public sources say. Two projects make code for the same NPU in two different ways.</p>
+<figure class="fig">
+  <svg viewBox="0 0 760 270" role="img" aria-labelledby="fr1">
+    <title id="fr1">Two compiler paths to the Hexagon NPU: Hexagon-MLIR, and Mojo with MAX</title>
+    <defs><marker id="mr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#161616"/></marker></defs>
+    <g font-family="B612, Arial, sans-serif" fill="#161616" text-anchor="middle">
+      <text x="10" y="18" font-size="11" font-weight="700" text-anchor="start" fill="#0369a1">PATH 1 · HEXAGON-MLIR (open source)</text>
+      <text x="10" y="168" font-size="11" font-weight="700" text-anchor="start" fill="#0369a1">PATH 2 · MOJO AND MAX</text>
+      <g stroke="#161616" stroke-width="1.5" fill="#fff">
+        <rect x="10" y="28" width="140" height="62"/><rect x="175" y="28" width="150" height="62"/><rect x="350" y="28" width="190" height="62"/>
+        <rect x="10" y="178" width="140" height="62"/><rect x="175" y="178" width="150" height="62"/><rect x="350" y="178" width="190" height="62"/>
+        <rect x="600" y="80" width="150" height="110" fill="#eef6fb" stroke="#0369a1" stroke-width="2.2"/>
+      </g>
+      <g stroke="#161616" stroke-width="1.5" marker-end="url(#mr)">
+        <line x1="150" y1="59" x2="174" y2="59"/><line x1="325" y1="59" x2="349" y2="59"/>
+        <line x1="540" y1="59" x2="560" y2="59"/><line x1="560" y1="59" x2="560" y2="115"/><line x1="560" y1="115" x2="599" y2="115"/>
+        <line x1="150" y1="209" x2="174" y2="209"/><line x1="325" y1="209" x2="349" y2="209"/>
+        <line x1="540" y1="209" x2="560" y2="209"/><line x1="560" y1="209" x2="560" y2="155"/><line x1="560" y1="155" x2="599" y2="155"/>
+      </g>
+      <g font-size="12" font-weight="700">
+        <text x="80" y="55">PyTorch models</text><text x="250" y="55">Torch-MLIR</text><text x="445" y="50">MLIR passes</text>
+        <text x="80" y="205">MAX graph</text><text x="250" y="205">Mojo compiler</text><text x="445" y="200">Hexagon LLVM</text>
+        <text x="675" y="125">HEXAGON NPU</text>
+      </g>
+      <g font-size="11">
+        <text x="80" y="72">Triton kernels</text><text x="250" y="72">triton-to-linalg</text>
+        <text x="445" y="67">fuse · tile to TCM</text><text x="445" y="82">HVX · threads · DMA</text>
+        <text x="80" y="222">Mojo kernels</text><text x="445" y="217">NPU backend</text>
+        <text x="675" y="145">HVX · HMX</text><text x="675" y="162">TCM · DMA</text>
+      </g>
+      <text x="380" y="136" font-size="11.5" fill="#b3001b" font-weight="700">Do the two paths share parts?</text>
+      <text x="380" y="152" font-size="11" fill="#4a4a4a">The public sources do not say.</text>
+    </g>
+  </svg>
+  <figcaption>Figure R-1 · Two compiler paths to the Hexagon NPU, from public sources</figcaption>
+</figure>
+
+<h3>5. What is open, and what is not known</h3>
+<table>
+  <caption>Table R-3 · Open and unknown items</caption>
+  <thead><tr><th>Item</th><th>What the public sources say</th></tr></thead>
+  <tbody>
+    <tr><td>Hexagon-MLIR</td><td>Open source. The paper says that parts of the stack were open-sourced recently, so not all of it is public.</td></tr>
+    <tr><td>Cloud AI 100 compiler</td><td>The Linux kernel documents point to an open compiler on upstream LLVM and an open user-mode driver. These documents are older.</td></tr>
+    <tr><td>Mojo</td><td>One news report says that Mojo 1.0 is open source under Apache 2.0. Check the license in the repository.</td></tr>
+    <tr><td>Qualcomm backends of Modular</td><td>Unknown. The ModCon post says all hardware targets live in one repository. It does not give the license of the Qualcomm parts.</td></tr>
+    <tr><td>Shared parts of the two paths</td><td>Unknown. The sources do not say if Hexagon-MLIR and Mojo will share code or kernels.</td></tr>
+  </tbody>
+</table>
+<div class="note"><span class="nh">NOTE:</span>This chapter has the facts of 2026-10-10. The facts change fast. Check the sources in the list of references before you rely on a detail.</div>

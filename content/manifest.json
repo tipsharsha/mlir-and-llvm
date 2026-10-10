@@ -50,7 +50,15 @@
     { "id": "week-12", "group": "Weeks", "label": "Week 12", "sub": "MAX", "planned": true },
     { "id": "week-13", "group": "Weeks", "label": "Week 13+", "sub": "Final project", "planned": true },
     {
-      "id": "reference", "group": "Reference", "label": "Reference", "sub": "Sessions, glossary, sources",
+      "id": "research", "group": "Research and reference", "label": "Research", "sub": "Directions at Qualcomm",
+      "chapters": [
+        { "id": "qualcomm-context", "num": "RES-10", "title": "Qualcomm and the Modular stack", "file": "research/qualcomm-context.html" },
+        { "id": "directions", "num": "RES-20", "title": "Research directions", "file": "research/directions.html" },
+        { "id": "first-project", "num": "RES-30", "title": "A first project", "file": "research/first-project.html" }
+      ]
+    },
+    {
+      "id": "reference", "group": "Research and reference", "label": "Reference", "sub": "Sessions, glossary, sources",
       "chapters": [
         { "id": "sessions", "num": "REF-10", "title": "Session preparation", "file": "reference/sessions.html" },
         { "id": "glossary", "num": "REF-20", "title": "Glossary", "file": "reference/glossary.html" },

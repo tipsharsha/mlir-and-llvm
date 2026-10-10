@@ -1,0 +1,41 @@
+<p>This chapter gives an outline for a first project. The project teaches the pipeline of Hexagon-MLIR with upstream MLIR, and it does not need an NPU. It matches directions RD-2 and RD-3 in the previous chapter.</p>
+
+<div class="note"><span class="nh">NOTE:</span>This is an outline, not a procedure. The pass names and options of MLIR change between versions. Weeks 4 to 6 give the exact commands. Do those weeks first.</div>
+
+<h3>1. Goal</h3>
+<p>Build a small fused, tiled and vectorized kernel on a CPU. Use a small fixed-size buffer in place of the TCM. Then compare the measured speedup with a model.</p>
+
+<h3>2. Prerequisites</h3>
+<ul>
+  <li>Week 1: LLVM IR, <code>opt</code> and the vectorizer remarks.</li>
+  <li>Weeks 4 to 6: an MLIR build, <code>linalg</code>, tiling, bufferization and lowering to LLVM.</li>
+  <li>The Hexagon-MLIR paper (R16). Read its sections on fusion, tiling, vectorization and double buffering.</li>
+</ul>
+
+<h3>3. Milestones</h3>
+<ol class="kp">
+  <li>Write GELU or RMS-norm as <code>linalg</code> operations on tensors.</li>
+  <li>Fuse the producer and consumer generics. Check that the intermediate tensor is gone.</li>
+  <li>Tile the fused operation. Choose tile sizes so that the working set fits the buffer that stands in for the TCM.</li>
+  <li>Vectorize the tile with the <code>vector</code> dialect. Use a vector width of 128 bytes, the width of HVX in the 2025 slides.</li>
+  <li>Add double buffering by hand: a ping-pong pair of buffers, with a prologue and a loop body.</li>
+  <li>Measure the run time for each step above. Use the same data and the same machine.</li>
+  <li>Compare the result with the model 1/max(m, 1−m) of the paper. Find the ratio m of your kernel.</li>
+  <li>Write one page: what the model predicted, what you measured, and the reason for the difference.</li>
+</ol>
+
+<h3>4. What you learn</h3>
+<ul>
+  <li>How fusion, tiling, vectorization and buffering fit together in one MLIR pipeline.</li>
+  <li>Why a CPU with caches does not show the same effects as a scratchpad. This is the first limit of the project, and it is a result.</li>
+  <li>How hard it is to choose tile sizes by hand. This leads to RD-2.</li>
+</ul>
+
+<h3>5. Next step at work</h3>
+<p>These questions help you to connect the project to the real stack. Ask them in your team.</p>
+<ul>
+  <li>Which team owns Hexagon-MLIR, and which team owns the Mojo backend for Hexagon?</li>
+  <li>Do the two share kernels, passes or tests?</li>
+  <li>Can you get access to a Hexagon device or the SDK and the simulator?</li>
+  <li>Which parts can you publish, and who approves?</li>
+</ul>

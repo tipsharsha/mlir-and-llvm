@@ -25,6 +25,7 @@ content/home/         home page
 content/program/      introduction, schedule, applicability and revisions
 content/week-00/      Week 0: set-up, reading guide, primer, digests of R1 and R2, check
 content/week-01/      Week 1: C++ refresher, LLVM IR, check
+content/research/     Qualcomm context, research directions, a first project
 content/reference/    session preparation, glossary, list of references
 docs/archive/         the two earlier standalone HTML documents (replaced by the app)
 ```

@@ -1,0 +1,213 @@
+<p>This chapter gives nine research directions. The evidence for each direction comes from the sources in the previous chapter. The directions themselves are suggestions. No source says that Qualcomm plans this work.</p>
+
+<div class="note"><span class="nh">NOTE:</span>A direction is a question, not a result. Some directions need internal data or Hexagon hardware. Table R-4 shows which ones need it.</div>
+
+<table>
+  <caption>Table R-4 · The nine directions</caption>
+  <thead><tr><th class="c">No.</th><th>Area</th><th>Hardware needed</th><th>First step</th></tr></thead>
+  <tbody>
+    <tr><td class="c"><a href="#/research/directions/rd-1">1</a></td><td>Generated code versus hand-written kernels</td><td>Yes</td><td>Compare both paths on three kernels.</td></tr>
+    <tr><td class="c"><a href="#/research/directions/rd-2">2</a></td><td>Cost models for tiling and scheduling</td><td>Yes</td><td>Build an analytical model, then check it.</td></tr>
+    <tr><td class="c"><a href="#/research/directions/rd-3">3</a></td><td>Operations that need more than one generic</td><td>No</td><td>Prototype on a CPU with upstream MLIR.</td></tr>
+    <tr><td class="c"><a href="#/research/directions/rd-4">4</a></td><td>Compiler-generated matrix-engine code</td><td>Yes</td><td>Write down the HMX layout rules.</td></tr>
+    <tr><td class="c"><a href="#/research/directions/rd-5">5</a></td><td>Low-precision formats</td><td>Partly</td><td>Study native float16 math and its error.</td></tr>
+    <tr><td class="c"><a href="#/research/directions/rd-6">6</a></td><td>LLM decode and communication</td><td>Yes</td><td>Model the overlap of compute and all-reduce.</td></tr>
+    <tr><td class="c"><a href="#/research/directions/rd-7">7</a></td><td>Dynamic shapes and compile time</td><td>Partly</td><td>Measure compile time against kernel count.</td></tr>
+    <tr><td class="c"><a href="#/research/directions/rd-8">8</a></td><td>Hardware and compiler co-design</td><td>Internal data</td><td>Sweep the parameters of the cost model.</td></tr>
+    <tr><td class="c"><a href="#/research/directions/rd-9">9</a></td><td>Vectorization in the LLVM Hexagon backend</td><td>Yes</td><td>Find loops where the vectorizer decides badly.</td></tr>
+  </tbody>
+</table>
+
+<article class="task" id="rd-1">
+  <div class="task-head"><span class="tno">RD-1</span><span class="ttl">Generated code versus hand-written kernels</span><span class="time">Hexagon NPU</span></div>
+  <div class="task-body">
+    <h4>1. Question</h4>
+    <p>When does compiler-generated NPU code match a hand-written kernel? Where must the line between the two be?</p>
+    <h4>2. Evidence</h4>
+    <ul>
+      <li>Hexagon-MLIR makes kernels from Triton and PyTorch. The 2025 slides report up to 80 percent of hand-written speed in early results.</li>
+      <li>The ModCon post describes hand-written Mojo kernels for GEMM, decode, LayerNorm, softmax and attention.</li>
+      <li>Part 7 reports a gap of about 20 percent for Triton on an NVIDIA GPU. The same debate exists there.</li>
+    </ul>
+    <h4>3. Why it is open</h4>
+    <p>The public sources give no comparison of the two paths on the same kernels, shapes and chip.</p>
+    <h4>4. A first study</h4>
+    <p>Select three kernels, for example GELU, RMS-norm and attention. Measure both paths. Report speed, code size and the effort to write each version.</p>
+    <h4>5. Links to your program</h4>
+    <p>Weeks 4 to 6 (MLIR), Weeks 7 to 9 (Mojo) and Week 12 (MAX). It is also the fusion question for the sessions.</p>
+  </div>
+</article>
+
+<article class="task" id="rd-2">
+  <div class="task-head"><span class="tno">RD-2</span><span class="ttl">Cost models for tiling and scheduling</span><span class="time">Hexagon NPU</span></div>
+  <div class="task-body">
+    <h4>1. Question</h4>
+    <p>How does a compiler choose tile sizes, thread counts and buffer depths for an NPU with a scratchpad memory?</p>
+    <h4>2. Evidence</h4>
+    <ul>
+      <li>In the paper, multithreaded GELU is 2.28 times faster at 32K elements and 3.95 times faster at 512K. It is slower than one thread below about 16K elements.</li>
+      <li>The speedup falls to 3.40 times at 1M elements. The authors link this to pressure on TCM and the DMA queues.</li>
+      <li>The paper mentions a polytope-size heuristic and asks for better scheduling heuristics. It gives no details.</li>
+      <li>The paper’s idealized model for double buffering gives a speedup of 1/max(m, 1−m). The benefit is zero when a kernel is only memory-bound or only compute-bound.</li>
+    </ul>
+    <h4>3. Why it is open</h4>
+    <p>The heuristics are not described. Real kernels fall between the two extremes of the model, so a simple rule does not hold.</p>
+    <h4>4. A first study</h4>
+    <p>Build an analytical model from DMA bandwidth, HVX throughput and thread start-up cost. Compare it with measurements. Then test a search method or a learned model.</p>
+    <h4>5. Links to your program</h4>
+    <p>Weeks 4 to 6. Use the tiling and bufferization passes of MLIR.</p>
+  </div>
+</article>
+
+<article class="task" id="rd-3">
+  <div class="task-head"><span class="tno">RD-3</span><span class="ttl">Operations that need more than one generic</span><span class="time">CPU first</span></div>
+  <div class="task-body">
+    <h4>1. Question</h4>
+    <p>Which MLIR abstractions let a compiler fuse and tile softmax, scan and TopK?</p>
+    <h4>2. Evidence</h4>
+    <ul>
+      <li>The paper says that softmax, prefix-sum and TopK cannot be one <code>linalg.generic</code>. They need control-flow operations.</li>
+      <li>The paper reports 4.7 times for flash attention in float32. Attention is an important case for LLMs.</li>
+    </ul>
+    <h4>3. Why it is open</h4>
+    <p>A structured operation for scan or sort is not part of the core set that the paper uses. Fusing such operations is hard.</p>
+    <h4>4. A first study</h4>
+    <p>Study how upstream MLIR represents reductions, scans and sorts. On a CPU, prototype an online-softmax fusion. Check if tiling still works.</p>
+    <h4>5. Links to your program</h4>
+    <p>Weeks 4 to 6. This direction needs no NPU hardware.</p>
+  </div>
+</article>
+
+<article class="task" id="rd-4">
+  <div class="task-head"><span class="tno">RD-4</span><span class="ttl">Compiler-generated matrix-engine code</span><span class="time">Hexagon NPU</span></div>
+  <div class="task-body">
+    <h4>1. Question</h4>
+    <p>Can the compiler make HMX-level GEMM from <code>linalg</code> and a description of the layout?</p>
+    <h4>2. Evidence</h4>
+    <ul>
+      <li>The paper sends matrix multiplications and convolutions to a matrix engine. It handles layout with <code>linalg.pack</code> and <code>linalg.unpack</code>.</li>
+      <li>The paper does not list HMX work as future work.</li>
+      <li>In the ModCon post, the GEMM on HMX is a hand-written Mojo kernel.</li>
+    </ul>
+    <h4>3. Why it is open</h4>
+    <p>The public sources do not give the HMX tile and layout rules. They do not compare generated and hand-written GEMM.</p>
+    <h4>4. A first study</h4>
+    <p>Write down the HMX layout rules from the Hexagon documents. Express them as pack and unpack layouts. Compare the generated GEMM with the hand-written one.</p>
+    <h4>5. Links to your program</h4>
+    <p>Weeks 4 to 6 (layouts and lowering) and Weeks 10 and 11 (tiled matrix multiplication).</p>
+  </div>
+</article>
+
+<article class="task" id="rd-5">
+  <div class="task-head"><span class="tno">RD-5</span><span class="ttl">Low-precision formats</span><span class="time">Partly CPU</span></div>
+  <div class="task-body">
+    <h4>1. Question</h4>
+    <p>How must a compiler handle block-scaled formats and native float16 math on a vector unit?</p>
+    <h4>2. Evidence</h4>
+    <ul>
+      <li>In the paper, SiLU in float16 is 4.8 times faster, and in float32 it is 7.1 times faster. The authors link the loss to internal promotion to float32.</li>
+      <li>The paper uses polynomial approximations (Taylor series with Horner’s method) for functions such as exp.</li>
+      <li>The ModCon post mentions MXFP6 weights and an int8 KV cache.</li>
+    </ul>
+    <h4>3. Why it is open</h4>
+    <p>The paper describes no quantization pass. The public sources give no error analysis of the approximations.</p>
+    <h4>4. A first study</h4>
+    <p>Build native float16 approximations with proven error bounds. Test them against a reference in units of last place (ULP). Study this on a CPU first.</p>
+    <h4>5. Links to your program</h4>
+    <p>Week 1 (floating-point and <code>-ffast-math</code>) and Week 8 (SIMD in Mojo).</p>
+  </div>
+</article>
+
+<article class="task" id="rd-6">
+  <div class="task-head"><span class="tno">RD-6</span><span class="ttl">LLM decode and communication</span><span class="time">Cloud AI 100</span></div>
+  <div class="task-body">
+    <h4>1. Question</h4>
+    <p>How can a compiler overlap communication with compute during LLM decode on a card with several SoCs?</p>
+    <h4>2. Evidence</h4>
+    <ul>
+      <li>The ModCon post runs Gemma 4 31B across four SoCs with tensor parallelism.</li>
+      <li>The post lists the cost of all-reduce during decode as remaining work.</li>
+      <li>The post says that QCCL does not yet support in-kernel communication. An expert-parallel MoE model must wait.</li>
+    </ul>
+    <h4>3. Why it is open</h4>
+    <p>Decode is small and latency-bound. Each all-reduce is a large part of each step.</p>
+    <h4>4. A first study</h4>
+    <p>Model tensor-parallel decode with the MLIR sharding dialect. It had the name <code>mesh</code> in older releases, so check your version. Estimate how much overlap is possible.</p>
+    <h4>5. Links to your program</h4>
+    <p>Week 12 (MAX) and the questions about GPU and card targets in the sessions.</p>
+  </div>
+</article>
+
+<article class="task" id="rd-7">
+  <div class="task-head"><span class="tno">RD-7</span><span class="ttl">Dynamic shapes and compile time</span><span class="time">Partly CPU</span></div>
+  <div class="task-body">
+    <h4>1. Question</h4>
+    <p>How can a compiler specialize kernels for changing sequence lengths without long compile times?</p>
+    <h4>2. Evidence</h4>
+    <ul>
+      <li>The paper does not mention dynamic shapes.</li>
+      <li>Part 6 says that auto-tuning made the compiles of TVM slow.</li>
+      <li>The ModCon post says that the kernels use the QAIC JIT API, so compile time is part of the run.</li>
+    </ul>
+    <h4>3. Why it is open</h4>
+    <p>The sequence length changes at each decode step. This is my inference. The sources do not discuss it.</p>
+    <h4>4. A first study</h4>
+    <p>Measure compile time against the number of kernel variants. Compare bucketing of lengths with symbolic shapes.</p>
+    <h4>5. Links to your program</h4>
+    <p>Weeks 7 to 9 (parameters in Mojo are compile-time) and Week 12.</p>
+  </div>
+</article>
+
+<article class="task" id="rd-8">
+  <div class="task-head"><span class="tno">RD-8</span><span class="ttl">Hardware and compiler co-design</span><span class="time">Internal data</span></div>
+  <div class="task-body">
+    <h4>1. Question</h4>
+    <p>Which compiler-visible features of a future NPU give the most speed for LLM kernels?</p>
+    <h4>2. Evidence</h4>
+    <ul>
+      <li>Part 9 says that hardware companies struggle to build AI software. Qualcomm builds both the chips and, now, the Modular software.</li>
+      <li>The ModCon post names the AI200, AI250 and AI300 as the roadmap.</li>
+      <li>The post says that the next version of DeviceContext lets hardware companies do their own backend bring-up.</li>
+    </ul>
+    <h4>3. Why it is open</h4>
+    <p>Outside groups cannot change the hardware. The effect of scratchpad size, DMA queues or matrix tile shape is not public.</p>
+    <h4>4. A first study</h4>
+    <p>Make the cost model of RD-2 depend on hardware parameters. Sweep the parameters and rank them by effect on LLM kernels.</p>
+    <h4>5. Links to your program</h4>
+    <p>Weeks 10 and 11. Check the rules of Qualcomm before you use internal parameters.</p>
+  </div>
+</article>
+
+<article class="task" id="rd-9">
+  <div class="task-head"><span class="tno">RD-9</span><span class="ttl">Vectorization in the LLVM Hexagon backend</span><span class="time">Hexagon toolchain</span></div>
+  <div class="task-body">
+    <h4>1. Question</h4>
+    <p>Can the cost model of the loop vectorizer improve for 128-byte vectors and VLIW packets?</p>
+    <h4>2. Evidence</h4>
+    <ul>
+      <li>The 2025 slides give HVX vectors of 128 bytes.</li>
+      <li>The ModCon post says that Mojo compiles to the Hexagon LLVM NPU backend.</li>
+      <li>Week 1 shows how to read the vectorizer remarks with <code>-pass-remarks</code>.</li>
+    </ul>
+    <h4>3. Why it is open</h4>
+    <p>The sources do not say how good the vectorizer decisions are on Hexagon. This is a classic LLVM problem, so it is a safe place to start.</p>
+    <h4>4. A first study</h4>
+    <p>Collect loops where the measured best choice is not the choice of the vectorizer. Tune the cost model on them. Check that other loops do not get slower.</p>
+    <h4>5. Links to your program</h4>
+    <p>Weeks 1 to 3 (LLVM IR and passes).</p>
+  </div>
+</article>
+
+<h3>Where to publish</h3>
+<p>These are examples. Check the current call for papers for each one.</p>
+<table>
+  <caption>Table R-5 · Venues</caption>
+  <thead><tr><th>Venue</th><th>Type of work</th></tr></thead>
+  <tbody>
+    <tr><td>LLVM Developers’ Meeting, EuroLLVM</td><td>Talks and posters about compilers and passes. Qualcomm presented Hexagon-MLIR at the 2025 meeting.</td></tr>
+    <tr><td>CGO, CC, PLDI</td><td>Papers on code generation, optimization and languages.</td></tr>
+    <tr><td>ASPLOS</td><td>Papers on the link between architecture and software.</td></tr>
+    <tr><td>MLSys, the C4ML workshop</td><td>Papers on ML systems and compilers for ML.</td></tr>
+    <tr><td>LCTES</td><td>Papers on compilers for embedded systems.</td></tr>
+  </tbody>
+</table>
