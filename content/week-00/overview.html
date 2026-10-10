@@ -1,0 +1,141 @@
+<p>Chris Lattner wrote the sources of the Week 0 reading. They give the reasons for the design of LLVM, MLIR and the Modular stack.</p>
+  <h3>1. Purpose</h3>
+
+  <p>The chapters of this week give a digest of the reading in Week 0 and of the reading before the sessions. You can read the digests here, in place of a search.</p>
+  <p>Each digest is a reading card. Select the box at the end of a card when you have read it.</p>
+
+  <h3>2. What a digest gives you</h3>
+  <ul>
+    <li>The main idea, in two or three sentences.</li>
+    <li>The key points, in the order of the source.</li>
+    <li>The terms and the numbers that the source uses.</li>
+    <li>The link to your program, and three questions to test yourself.</li>
+  </ul>
+
+  <div class="caution"><div class="wh">CAUTION</div><p>THE DIGESTS ARE SUMMARIES. THEY ARE NOT COPIES. Check a number or a quotation in the original source before you use it in public. Each digest has a link to the original.</p></div>
+  <div class="note"><span class="nh">NOTE:</span>The digests were prepared on 2026-10-10 from the web pages of the sources. The series is from 2025. The LLVM chapter is from 2011.</div>
+  <div class="caution"><div class="wh">CAUTION</div><p>CHRIS LATTNER IS A CO-FOUNDER OF MODULAR. The series gives his view. Parts 10 and 11 describe the products of his company, and the checklist in Part 11 is a self-assessment. Read them with care.</p></div>
+
+  <h3>3. Reading plan</h3>
+  <p>Table 0-1 gives the sources. The first six are for Week 0. The other six are for the time before the sessions. The “read” box of each digest saves your progress in the app.</p>
+  <p>All the digests together take about 45 minutes. The whole guide takes about one hour. The original sources take much longer.</p>
+  <table>
+    <caption>Table 0-1 · Sources and reading order</caption>
+    <thead><tr><th>Source</th><th>Title</th><th>Digest</th><th>When</th></tr></thead>
+    <tbody><tr class="now"><td class="mono">Part 1</td><td>DeepSeek’s impact on AI</td><td><a href="#/week-0/r1-cuda-story/r-p1">Digest</a></td><td>Week 0</td></tr><tr class="now"><td class="mono">Part 2</td><td>What exactly is “CUDA”?</td><td><a href="#/week-0/r1-cuda-story/r-p2">Digest</a></td><td>Week 0</td></tr><tr class="now"><td class="mono">Part 3</td><td>How did CUDA succeed?</td><td><a href="#/week-0/r1-cuda-story/r-p3">Digest</a></td><td>Week 0</td></tr><tr class="now"><td class="mono">Part 4</td><td>CUDA is the incumbent, but is it any good?</td><td><a href="#/week-0/r1-cuda-story/r-p4">Digest</a></td><td>Week 0</td></tr><tr class="now"><td class="mono">Part 8</td><td>What about the MLIR compiler infrastructure?</td><td><a href="#/week-0/r1-alternatives/r-p8">Digest</a></td><td>Week 0</td></tr><tr class="now"><td class="mono">R2</td><td>LLVM (Architecture of Open Source Applications)</td><td><a href="#/week-0/r2-llvm-chapter/r-aosa">Digest</a></td><td>Week 0</td></tr><tr><td class="mono">Part 5</td><td>What about OpenCL and CUDA C++ alternatives?</td><td><a href="#/week-0/r1-alternatives/r-p5">Digest</a></td><td>Before the sessions</td></tr><tr><td class="mono">Part 6</td><td>What about TVM, XLA, and AI compilers?</td><td><a href="#/week-0/r1-alternatives/r-p6">Digest</a></td><td>Before the sessions</td></tr><tr><td class="mono">Part 7</td><td>What about Triton and Python eDSLs?</td><td><a href="#/week-0/r1-alternatives/r-p7">Digest</a></td><td>Before the sessions</td></tr><tr><td class="mono">Part 9</td><td>Why do HW companies struggle to build AI software?</td><td><a href="#/week-0/r1-modular/r-p9">Digest</a></td><td>Before the sessions</td></tr><tr><td class="mono">Part 10</td><td>Modular’s bet to break out of the Matrix</td><td><a href="#/week-0/r1-modular/r-p10">Digest</a></td><td>Before the sessions</td></tr><tr><td class="mono">Part 11</td><td>How is Modular democratizing AI compute?</td><td><a href="#/week-0/r1-modular/r-p11">Digest</a></td><td>Before the sessions</td></tr></tbody>
+  </table>
+  <table class="plan">
+    <caption>Table 0-2 · Suggested reading sessions (10 to 20 minutes each, plus the self-tests)</caption>
+    <thead><tr><th>Session</th><th>Read</th></tr></thead>
+    <tbody>
+      <tr><td>1</td><td>The overview on this page. The primer. Part 1. Part 2.</td></tr>
+      <tr><td>2</td><td>Part 3. Part 4. The LLVM chapter (R2). Then go on to Week 1.</td></tr>
+      <tr><td>3</td><td>Part 6, then Part 8. Part 6 gives the background that Part 8 uses.</td></tr>
+      <tr><td>4</td><td>Part 5. Part 7.</td></tr>
+      <tr><td>5</td><td>Part 9. Part 10. Part 11. Then <a href="#/reference/sessions">Session preparation</a>.</td></tr>
+    </tbody>
+  </table>
+  
+
+<h3>4. The story in ten sentences</h3>
+  <ol class="kp">
+    <li>AI needs a lot of compute, and the demand grows. (Part 1)</li>
+    <li>Most AI compute runs on NVIDIA GPUs, which developers program with CUDA. (Parts 2 and 3)</li>
+    <li>CUDA is a whole platform: a language, a driver, libraries and complete solutions. NVIDIA owns all of it. (Part 2)</li>
+    <li>CUDA won through strategy: one compatible GPU line, strong libraries and good timing with AI. (Part 3)</li>
+    <li>CUDA is hard to use and ties code to NVIDIA hardware. It also costs NVIDIA a lot. (Part 4)</li>
+    <li>Others tried to replace it: OpenCL and SYCL (Part 5), TVM and XLA (Part 6), Triton (Part 7) and MLIR (Part 8).</li>
+    <li>They failed to unify the field for similar reasons: slow committees, forks, slow evolution, weak speed on NVIDIA hardware and mixed incentives.</li>
+    <li>Hardware companies cannot fix this alone, because their incentives and structure work against long-term software. (Part 9)</li>
+    <li>Modular bets on a new stack, built in closed research and then opened. (Part 10)</li>
+    <li>The stack has layers: Mojo, MAX and Mammoth. Modular says that one build runs on NVIDIA GPUs, AMD GPUs and CPUs. (Part 11)</li>
+  </ol>
+
+  
+<figure class="fig">
+  <svg viewBox="0 0 760 300" role="img" aria-labelledby="fa1">
+    <title id="fa1">Argument map of the series, Parts 1 to 11</title>
+    <defs><marker id="ma" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#161616"/></marker></defs>
+    <g font-family="B612, Arial, sans-serif" fill="#161616">
+      <g stroke="#161616" stroke-width="1.5" fill="#fff">
+        <rect x="10" y="10" width="110" height="160"/>
+        <rect x="140" y="10" width="120" height="160"/>
+        <rect x="280" y="10" width="300" height="160"/>
+        <rect x="600" y="10" width="150" height="160"/>
+        <rect x="280" y="215" width="470" height="76" fill="#eef6fb" stroke="#0369a1" stroke-width="2.2"/>
+      </g>
+      <g stroke="#161616" stroke-width="1.5" fill="#f4f5f6">
+        <rect x="292" y="62" width="132" height="42"/><rect x="436" y="62" width="132" height="42"/>
+        <rect x="292" y="112" width="132" height="42"/><rect x="436" y="112" width="132" height="42"/>
+      </g>
+      <g stroke="#161616" stroke-width="1.5" marker-end="url(#ma)">
+        <line x1="120" y1="90" x2="139" y2="90"/><line x1="260" y1="90" x2="279" y2="90"/>
+        <line x1="580" y1="90" x2="599" y2="90"/><line x1="675" y1="170" x2="675" y2="214"/>
+      </g>
+      <g text-anchor="middle">
+        <text x="65" y="32" font-size="11" font-weight="700" fill="#0369a1">PART 1</text>
+        <text x="65" y="56" font-size="13" font-weight="700">WHY NOW</text>
+        <text x="65" y="78" font-size="11">AI demand grows.</text><text x="65" y="94" font-size="11">Cost must fall.</text>
+        <text x="65" y="118" font-size="11">DeepSeek: better use</text><text x="65" y="134" font-size="11">of hardware helps.</text>
+        <text x="200" y="32" font-size="11" font-weight="700" fill="#0369a1">PARTS 2–4</text>
+        <text x="200" y="56" font-size="13" font-weight="700">THE CUDA</text><text x="200" y="72" font-size="13" font-weight="700">PLATFORM</text>
+        <text x="200" y="98" font-size="11">What it is (2)</text><text x="200" y="114" font-size="11">Why it won (3)</text><text x="200" y="130" font-size="11">Is it good? (4)</text>
+        <text x="430" y="32" font-size="11" font-weight="700" fill="#0369a1">PARTS 5–8</text>
+        <text x="430" y="52" font-size="13" font-weight="700">FOUR ATTEMPTS TO REPLACE IT</text>
+        <text x="358" y="80" font-size="11" font-weight="700">OpenCL, SYCL</text><text x="358" y="96" font-size="11">Part 5</text>
+        <text x="502" y="80" font-size="11" font-weight="700">TVM, XLA</text><text x="502" y="96" font-size="11">Part 6</text>
+        <text x="358" y="130" font-size="11" font-weight="700">Triton, eDSLs</text><text x="358" y="146" font-size="11">Part 7</text>
+        <text x="502" y="130" font-size="11" font-weight="700">MLIR</text><text x="502" y="146" font-size="11">Part 8</text>
+        <text x="675" y="32" font-size="11" font-weight="700" fill="#0369a1">PART 9</text>
+        <text x="675" y="56" font-size="13" font-weight="700">WHY HARDWARE</text><text x="675" y="72" font-size="13" font-weight="700">COMPANIES FAIL</text>
+        <text x="675" y="98" font-size="11">Incentives, priorities,</text><text x="675" y="114" font-size="11">software cost.</text>
+        <text x="515" y="238" font-size="11" font-weight="700" fill="#0369a1">PARTS 10–11</text>
+        <text x="515" y="260" font-size="13" font-weight="700">MODULAR’S ANSWER</text>
+        <text x="515" y="280" font-size="11">Closed research, then open · Mojo, MAX, Mammoth</text>
+      </g>
+      <text x="10" y="200" font-size="11" fill="#4a4a4a">Each box is a step in the argument. Arrows show the order.</text>
+    </g>
+  </svg>
+  <figcaption>Figure 0-1 · Argument map of the series</figcaption>
+</figure>
+
+  <h3>5. Timeline</h3>
+  <table>
+    <caption>Table 0-3 · Dates in the sources</caption>
+    <thead><tr><th>Date</th><th>Event</th><th>Source</th></tr></thead>
+    <tbody>
+      <tr><td class="mono">Dec 2000</td><td>The LLVM project begins.</td><td class="mono">R2</td></tr>
+      <tr><td class="mono">2001</td><td>NVIDIA GeForce3. The first GPU with programmable shaders.</td><td class="mono">P2</td></tr>
+      <tr><td class="mono">2006</td><td>CUDA is launched. (Part 4 gives 2007.)</td><td class="mono">P2, P4</td></tr>
+      <tr><td class="mono">2008</td><td>Apple builds OpenCL. Lattner is a lead engineer.</td><td class="mono">P5</td></tr>
+      <tr><td class="mono">2012</td><td>AlexNet trains on two GeForce GTX 580 GPUs with CUDA.</td><td class="mono">P2, P3</td></tr>
+      <tr><td class="mono">2014 · 2015 · 2016</td><td>cuDNN · TensorFlow · PyTorch. TVM starts at about this time.</td><td class="mono">P2, P6</td></tr>
+      <tr><td class="mono">2017</td><td>Lattner joins Google to lead TPU software.</td><td class="mono">P1, P6</td></tr>
+      <tr><td class="mono">2018</td><td>AI software is fragmented. MLIR starts at Google Brain. The TVM paper appears.</td><td class="mono">P6, P8</td></tr>
+      <tr><td class="mono">2019</td><td>The Triton research paper.</td><td class="mono">P7</td></tr>
+      <tr><td class="mono">Late 2022</td><td>ChatGPT launches. (Part 9 says 2023.)</td><td class="mono">P3, P9</td></tr>
+      <tr><td class="mono">Mar 2023</td><td>XLA is renamed OpenXLA.</td><td class="mono">P6</td></tr>
+      <tr><td class="mono">Late 2024</td><td>NVIDIA acquires OctoAI, the company of the TVM core developers.</td><td class="mono">P6</td></tr>
+      <tr><td class="mono">30 Jan 2025</td><td>Part 1 is published. Parts 2 to 9 follow until 22 April.</td><td class="mono">P1–P9</td></tr>
+      <tr><td class="mono">8 May 2025</td><td>Part 10. Modular opens its platform.</td><td class="mono">P10</td></tr>
+      <tr><td class="mono">20 Jun 2025</td><td>Part 11. The Modular Platform and its checklist.</td><td class="mono">P11</td></tr>
+    </tbody>
+  </table>
+
+  <h3>6. Scorecard</h3>
+  <p>Part 5 gives seven requirements for a successful unifier. Later parts score projects against them. Table 0-4 puts these scores together.</p>
+  <div class="note"><span class="nh">NOTE:</span>Each cell gives the words or the rating of the article. A dash means that the article does not rate the item. The last column is the company’s own claim.</div>
+  <table class="score">
+    <caption>Table 0-4 · The seven requirements, scored by Lattner</caption>
+    <thead><tr><th>Requirement</th><th>OpenCL, SYCL (Part 5)</th><th>TVM, XLA (Part 6)</th><th>Triton (Part 7)</th><th>MLIR (Part 8)</th><th>Modular (Part 11)</th></tr></thead>
+    <tbody>
+      <tr><td>Reference implementation</td><td class="neg">No. A specification and tests only.</td><td class="pos">Yes. Both give working code.</td><td class="pos">Yes.</td><td class="neg">Poor. Building blocks only.</td><td class="pos">Claimed. Language, framework, runtime, cluster layer.</td></tr>
+      <tr><td>Leadership and vision</td><td class="mix">A committee.</td><td class="mix">Mixed. The vision does not match the hardware teams.</td><td class="mix">OpenAI owns the roadmap.</td><td class="neg">Poor, but it improves.</td><td class="pos">Claimed.</td></tr>
+      <tr><td>Top speed on the leader’s hardware</td><td class="neg">5 to 10 times slower than CUDA.</td><td class="mix">Mixed. GPUs need CUDA libraries.</td><td class="neg">About 20% behind CUDA on H100.</td><td class="neg">Poor. 15–20% left unused.</td><td class="pos">Claimed on Hopper and Blackwell.</td></tr>
+      <tr><td>Fast evolution</td><td class="neg">Slow. Committee speed.</td><td class="neg">Not ready for GenAI.</td><td class="neg">Slow.</td><td class="pos">Good.</td><td class="pos">A release every 6–8 weeks.</td></tr>
+      <tr><td>Developer love</td><td class="neg">Poor.</td><td class="mix">Mixed. XLA good. TVM compiles slowly.</td><td class="pos">Strong.</td><td class="mix">Mixed. Hard for ML developers.</td><td class="pos">Claimed.</td></tr>
+      <tr><td>Open community</td><td>—</td><td class="pos">Good.</td><td class="neg">Limited openness.</td><td class="pos">Very good.</td><td class="pos">Claimed. Open source.</td></tr>
+      <tr><td>No fragmentation</td><td class="neg">No. Forks and extensions.</td><td class="neg">No. TVM forks. XLA stays downstream.</td><td class="neg">Fragmented across vendors.</td><td class="neg">Very poor.</td><td class="pos">Claimed. One release process.</td></tr>
+    </tbody>
+  </table>
+  <div class="note"><span class="nh">NOTE:</span>Part 10 lists five success criteria. Part 11 lists twelve checklist items. The seven requirements above are the common base for the series.</div>

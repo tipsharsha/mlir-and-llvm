@@ -1,0 +1,157 @@
+<p>Week 0 prepares the computer and gives the background. If possible, do Week 0 before the first session.</p>
+
+  <!-- TASK 00-20-00-200-801 -->
+  <article class="task" id="t-00-20-00-200-801" data-task="00-20-00-200-801" data-week="0" data-title="Examine the WSL2 installation" data-time="5 min">
+    <div class="task-head"><span class="tno">TASK 00-20-00-200-801</span><span class="ttl">Examine the WSL2 installation</span><span class="time">5 min</span></div>
+    <div class="task-body">
+      <h4>1. General</h4>
+      <p>This task makes sure that Ubuntu operates on WSL2. The tools in this program need WSL2. WSL1 is not satisfactory.</p>
+      <h4>2. Job set-up information</h4>
+      <table>
+        <thead><tr><th>Tools and equipment</th><th>Referenced information</th></tr></thead>
+        <tbody><tr><td>Windows PowerShell</td><td>R5</td></tr></tbody>
+      </table>
+      <h4>3. Procedure</h4>
+      <ol class="steps">
+        <li class="step"><b class="n">(1)</b><div class="body">Open Windows PowerShell.</div></li>
+        <li class="step"><b class="n">(2)</b><div class="body">Show the WSL distributions:
+<pre class="cmd" data-sh="PS"><code>wsl -l -v</code></pre></div></li>
+        <li class="step"><b class="n">(3)</b><div class="body">Make sure that the line for <code>Ubuntu</code> shows <code>2</code> in the <code>VERSION</code> column.</div></li>
+        <li class="step"><b class="n">(4)</b><div class="body">Start Ubuntu:
+<pre class="cmd" data-sh="PS"><code>wsl -d Ubuntu</code></pre></div></li>
+        <li class="step"><b class="n">(5)</b><div class="body">Show the Ubuntu release:
+<pre class="cmd" data-sh="WSL"><code>lsb_release -ds</code></pre></div></li>
+        <li class="step"><b class="n">(6)</b><div class="body">Make sure that the release is Ubuntu 24.04 or later.</div></li>
+      </ol>
+      <div class="note"><span class="nh">NOTE:</span>At the date of this issue, the result was <code>Ubuntu 24.04.3 LTS</code> on WSL2. The <code>docker-desktop</code> line is for Docker Desktop. This program does not use it.</div>
+    </div>
+  </article>
+
+  <!-- TASK 00-20-00-400-801 -->
+  <article class="task" id="t-00-20-00-400-801" data-task="00-20-00-400-801" data-week="0" data-title="Increase the WSL2 memory limit" data-time="15 min">
+    <div class="task-head"><span class="tno">TASK 00-20-00-400-801</span><span class="ttl">Increase the WSL2 memory limit</span><span class="time">15 min</span></div>
+    <div class="task-body">
+      <h4>1. General</h4>
+      <p>By default, WSL2 can use 50 percent of the computer memory. On your computer, this is approximately 11 GB.</p>
+      <p>The MLIR build in Week 4 needs more memory. This task sets the limit to 16 GB. It also adds 16 GB of swap space.</p>
+      <div class="warning"><div class="wh">WARNING</div>
+        <p>DO NOT SET THE MEMORY LIMIT TO MORE THAN 18 GB. Windows must keep approximately 6 GB. If Windows has less memory, applications can stop.</p>
+      </div>
+      <div class="note"><span class="nh">NOTE:</span>This limit also applies to Docker Desktop, because Docker Desktop uses WSL2.</div>
+      <h4>2. Job set-up information</h4>
+      <table>
+        <thead><tr><th>Tools and equipment</th><th>Referenced information</th></tr></thead>
+        <tbody><tr><td>Windows PowerShell, Notepad</td><td>R5</td></tr></tbody>
+      </table>
+      <h4>3. Procedure</h4>
+      <ol class="steps">
+        <li class="step"><b class="n">(1)</b><div class="body">Open the file <code>.wslconfig</code> in Notepad:
+<pre class="cmd" data-sh="PS"><code>notepad "$env:USERPROFILE\.wslconfig"</code></pre></div></li>
+        <li class="step"><b class="n">(2)</b><div class="body">If Notepad asks to make a new file, select <b>Yes</b>.</div></li>
+        <li class="step"><b class="n">(3)</b><div class="body">Write these lines in the file:
+<pre class="code"><code>[wsl2]
+memory=16GB
+swap=16GB</code></pre></div></li>
+        <li class="step"><b class="n">(4)</b><div class="body">Save the file.</div></li>
+        <li class="step"><b class="n">(5)</b><div class="body">Close Notepad.</div></li>
+        <li class="step"><b class="n">(6)</b><div class="body">Stop WSL:
+<pre class="cmd" data-sh="PS"><code>wsl --shutdown</code></pre></div></li>
+        <li class="step"><b class="n">(7)</b><div class="body">Start Ubuntu:
+<pre class="cmd" data-sh="PS"><code>wsl -d Ubuntu</code></pre></div></li>
+        <li class="step"><b class="n">(8)</b><div class="body">Show the memory:
+<pre class="cmd" data-sh="WSL"><code>free -g</code></pre></div></li>
+        <li class="step"><b class="n">(9)</b><div class="body">Make sure that the <code>total</code> value in the <code>Mem</code> line is 15 or more.</div></li>
+        <li class="step"><b class="n">(10)</b><div class="body">Make sure that the <code>total</code> value in the <code>Swap</code> line is 15 or more.</div></li>
+      </ol>
+    </div>
+  </article>
+
+  <!-- TASK 00-20-00-400-802 -->
+  <article class="task" id="t-00-20-00-400-802" data-task="00-20-00-400-802" data-week="0" data-title="Install the compiler tools" data-time="20 min">
+    <div class="task-head"><span class="tno">TASK 00-20-00-400-802</span><span class="ttl">Install the compiler tools</span><span class="time">20 min</span></div>
+    <div class="task-body">
+      <h4>1. General</h4>
+      <p>This task installs Clang, LLVM and the build tools from the Ubuntu packages. Ubuntu 24.04 supplies LLVM 18.</p>
+      <p>Week 4 builds a newer LLVM and MLIR from the source code. LLVM 18 is satisfactory for Weeks 1 to 3.</p>
+      <div class="caution"><div class="wh">CAUTION</div>
+        <p>KEEP ALL WORK FILES IN THE LINUX FILE SYSTEM, FOR EXAMPLE IN <code>~/lab</code>. DO NOT KEEP WORK FILES IN <code>/mnt/c</code>. File operations in <code>/mnt/c</code> are much slower.</p>
+      </div>
+      <h4>2. Job set-up information</h4>
+      <table>
+        <thead><tr><th>Tools and equipment</th><th>Referenced information</th></tr></thead>
+        <tbody><tr><td>Ubuntu shell in WSL2, internet connection, your Ubuntu password (for <code>sudo</code>)</td><td>—</td></tr></tbody>
+      </table>
+      <table>
+        <caption>Packages that this task installs</caption>
+        <thead><tr><th>Package</th><th>Contents</th></tr></thead>
+        <tbody>
+          <tr><td><code>build-essential</code></td><td>GCC, make and the C library headers.</td></tr>
+          <tr><td><code>clang</code>, <code>lld</code></td><td>The Clang C and C++ compiler. The LLVM linker.</td></tr>
+          <tr><td><code>clangd</code></td><td>The language server for editors. It shows errors and completes names.</td></tr>
+          <tr><td><code>llvm</code></td><td><code>opt</code>, <code>llc</code> and the other LLVM tools.</td></tr>
+          <tr><td><code>llvm-dev</code></td><td>The LLVM headers and <code>llvm-config</code>. Week 2 uses them.</td></tr>
+          <tr><td><code>libclang-rt-18-dev</code></td><td>The sanitizer run-time libraries for Clang.</td></tr>
+          <tr><td><code>cmake</code>, <code>ninja-build</code></td><td>The build tools that LLVM and MLIR use.</td></tr>
+          <tr><td><code>graphviz</code></td><td>The <code>dot</code> command. It makes drawings of control flow graphs.</td></tr>
+        </tbody>
+      </table>
+      <h4>3. Procedure</h4>
+      <ol class="steps">
+        <li class="step"><b class="n">(1)</b><div class="body">Start Ubuntu.</div></li>
+        <li class="step"><b class="n">(2)</b><div class="body">Update the package index:
+<pre class="cmd" data-sh="WSL"><code>sudo apt update</code></pre></div></li>
+        <li class="step"><b class="n">(3)</b><div class="body">Install the packages:
+<pre class="cmd" data-sh="WSL"><code>sudo apt install -y build-essential clang clangd lld llvm llvm-dev libclang-rt-18-dev cmake ninja-build graphviz</code></pre></div></li>
+        <li class="step"><b class="n">(4)</b><div class="body">Show the tool versions:
+<pre class="cmd" data-sh="WSL"><code>clang --version
+opt --version
+llvm-config --version</code></pre></div></li>
+        <li class="step"><b class="n">(5)</b><div class="body">Make sure that the three tools show the same major version. Record the version.</div></li>
+        <li class="step"><b class="n">(6)</b><div class="body">Make the work directory for Week 1:
+<pre class="cmd" data-sh="WSL"><code>mkdir -p ~/lab/week-01</code></pre></div></li>
+      </ol>
+      <div class="note"><span class="nh">NOTE:</span>VS Code with the WSL extension can edit the files in WSL. In Ubuntu, the command <code>code .</code> opens the current directory. The clangd extension uses <code>clangd</code>.</div>
+    </div>
+  </article>
+
+  <!-- TASK 00-20-00-400-803 -->
+  <article class="task" id="t-00-20-00-400-803" data-task="00-20-00-400-803" data-week="0" data-title="Install Mojo (installation check)" data-time="20 min">
+    <div class="task-head"><span class="tno">TASK 00-20-00-400-803</span><span class="ttl">Install Mojo (installation check)</span><span class="time">20 min</span></div>
+    <div class="task-body">
+      <h4>1. General</h4>
+      <p>Weeks 7 to 12 use Mojo. This task makes sure now that Mojo installs and operates in WSL2. Thus, the Mojo weeks can start without delay.</p>
+      <div class="note"><span class="nh">NOTE:</span>The install procedure can change. At the date of this issue, the steps in this task agree with R3. If R3 and this task are different, R3 is correct.</div>
+      <h4>2. Job set-up information</h4>
+      <table>
+        <thead><tr><th>Tools and equipment</th><th>Referenced information</th></tr></thead>
+        <tbody><tr><td>Ubuntu shell in WSL2, internet connection</td><td>R3, R4</td></tr></tbody>
+      </table>
+      <h4>3. Procedure</h4>
+      <ol class="steps">
+        <li class="step"><b class="n">(1)</b><div class="body">Install the pixi package manager:
+<pre class="cmd" data-sh="WSL"><code>curl -fsSL https://pixi.sh/install.sh | sh</code></pre></div></li>
+        <li class="step"><b class="n">(2)</b><div class="body">Load the new <code>PATH</code>:
+<pre class="cmd" data-sh="WSL"><code>source ~/.bashrc</code></pre></div></li>
+        <li class="step"><b class="n">(3)</b><div class="body">Go to the lab directory:
+<pre class="cmd" data-sh="WSL"><code>cd ~/lab</code></pre></div></li>
+        <li class="step"><b class="n">(4)</b><div class="body">Make a Mojo project:
+<pre class="cmd" data-sh="WSL"><code>pixi init mojo-check -c https://conda.modular.com/max/ -c conda-forge</code></pre></div></li>
+        <li class="step"><b class="n">(5)</b><div class="body">Go to the project directory:
+<pre class="cmd" data-sh="WSL"><code>cd mojo-check</code></pre></div></li>
+        <li class="step"><b class="n">(6)</b><div class="body">Add the Mojo package:
+<pre class="cmd" data-sh="WSL"><code>pixi add mojo</code></pre></div></li>
+        <li class="step"><b class="n">(7)</b><div class="body">Show the Mojo version:
+<pre class="cmd" data-sh="WSL"><code>pixi run mojo --version</code></pre></div></li>
+        <li class="step"><b class="n">(8)</b><div class="body">Make sure that the command shows a version number.</div></li>
+        <li class="step"><b class="n">(9)</b><div class="body">Make the file <code>hello.mojo</code>:
+<pre class="cmd" data-sh="WSL"><code>cat > hello.mojo &lt;&lt;'EOF'
+def main():
+    print("Hello from Mojo")
+EOF</code></pre></div></li>
+        <li class="step"><b class="n">(10)</b><div class="body">Run the program:
+<pre class="cmd" data-sh="WSL"><code>pixi run mojo hello.mojo</code></pre></div></li>
+        <li class="step"><b class="n">(11)</b><div class="body">Make sure that the output is <code>Hello from Mojo</code>.</div></li>
+      </ol>
+      <div class="note"><span class="nh">NOTE:</span>This task does not use the GPU. Week 10 examines the GPU in WSL2.</div>
+    </div>
+  </article>

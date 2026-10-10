@@ -1,0 +1,12 @@
+{
+  "name": "mlir-llvm-training",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Training program: MLIR and LLVM for the Modular stack",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

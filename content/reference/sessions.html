@@ -1,0 +1,44 @@
+<h3>1. The four main questions</h3>
+  <table>
+    <caption>Table 0-6 · Questions, background and what to listen for</caption>
+    <thead><tr><th>Question</th><th>Background in this guide</th><th>What to listen for</th></tr></thead>
+    <tbody>
+      <tr><td>How do Mojo parameters map to MLIR? When does the compiler resolve them?</td><td>Part 8 (dialects and lowering). Part 7 (limits of eDSLs). Part 11 (Mojo).</td><td>Which MLIR dialects appear in the path from Mojo source to machine code.</td></tr>
+      <tr><td>How much does MAX use upstream dialects such as <code>linalg</code>?</td><td>Part 8: the dialects arith, linalg and tensor, and the idea of a separate “TensorIR”.</td><td>The words “upstream” and “our own”. Which dialects Modular keeps and which it replaced.</td></tr>
+      <tr><td>Where does MAX decide on fusion?</td><td>Part 6 (kernel fusion, Figure 0-2). Part 11 (the MAX layer).</td><td>If the graph compiler or the Mojo kernels make the decision.</td></tr>
+      <tr><td>For GPU targets, what goes through LLVM?</td><td>R2 (the code generator). Part 2 (PTX). Part 11 (Mojo and the hardware).</td><td>The step where code leaves MLIR, and the role of NVPTX and AMDGPU.</td></tr>
+    </tbody>
+  </table>
+
+  <h3>2. Seven more questions from the series</h3>
+  <ol class="kp">
+    <li>Part 7: Triton is an eDSL, and an eDSL “looks like Python but is not Python”. Is Mojo a real language or an eDSL? How does it avoid this problem?</li>
+    <li>Part 8: Did Modular keep the upstream dialects arith, linalg and tensor? Or did it define its own?</li>
+    <li>Part 6: What is the unit of fusion in MAX? Does it use auto-tuning, and how does it keep compile times short?</li>
+    <li>Part 9: How does Modular avoid “chasing the whale” when a large customer asks for a custom feature?</li>
+    <li>Part 11: What does a hardware vendor write to add a new accelerator? What does Modular write?</li>
+    <li>Parts 4 and 10: How does Modular handle changes between NVIDIA generations, for example Hopper to Blackwell?</li>
+    <li>Part 10: Which parts are open source now, and which are not? What happens to the closed parts?</li>
+  </ol>
+
+  <h3>3. Claims to check</h3>
+  <ul>
+    <li>“One binary” runs on NVIDIA GPUs, AMD GPUs and CPUs (Part 11). Ask for the conditions.</li>
+    <li>Top speed on Hopper and Blackwell (Part 11). Ask for the benchmark, the model and the baseline.</li>
+    <li>The size of the open-source code: over half a million lines (Part 10), hundreds of thousands (Part 11).</li>
+    <li>The checklist of twelve items is a self-assessment. Ask which items are not yet met.</li>
+  </ul>
+
+  <h3>4. Where the reading connects to your program</h3>
+  <table>
+    <caption>Table 0-7 · Reading and program weeks</caption>
+    <thead><tr><th>Reading</th><th>Practice in the program</th></tr></thead>
+    <tbody>
+      <tr><td>R2 (LLVM chapter)</td><td>Weeks 1 to 3. LLVM IR, Kaleidoscope, passes.</td></tr>
+      <tr><td>Part 8 (MLIR)</td><td>Weeks 4 to 6. MLIR build, Toy tutorial, lowering.</td></tr>
+      <tr><td>Part 6 (AI compilers)</td><td>Week 6 (lowering and fusion ideas) and Week 12 (the MAX graph compiler).</td></tr>
+      <tr><td>Part 7 (eDSLs)</td><td>Week 8. Mojo parameters and SIMD.</td></tr>
+      <tr><td>Parts 2 and 4 (CUDA)</td><td>Weeks 10 and 11. GPU kernels and the Mojo GPU Puzzles.</td></tr>
+      <tr><td>Parts 10 and 11 (Modular)</td><td>Weeks 7 to 12. Mojo, GPU and MAX.</td></tr>
+    </tbody>
+  </table>

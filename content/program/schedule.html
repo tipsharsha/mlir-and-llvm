@@ -1,0 +1,30 @@
+<p>The program has Week 0, twelve weeks of modules and a final project. Each week needs approximately 6 to 8 hours.</p>
+  <p>The LLVM module has three weeks. The first week includes a C++ refresher, because the LLVM and MLIR tutorials use C++.</p>
+
+  <table>
+    <caption>Table 3 · Program schedule</caption>
+    <thead><tr><th class="c">Week</th><th>Module</th><th>Subject</th><th>Main references</th><th>Output</th><th>Status</th></tr></thead>
+    <tbody>
+      <tr class="now"><td class="c mono"><a href="#/week-0">0</a></td><td>SET-UP</td><td>WSL2, compiler tools, Mojo check. Background reading.</td><td>R1 (Parts 1–4, 8), R2</td><td>A toolchain that operates. Notes on R1 and R2.</td><td><span class="badge now">This issue</span></td></tr>
+      <tr class="now"><td class="c mono"><a href="#/week-1">1</a></td><td>LLVM-1</td><td>C++ refresher. LLVM IR with clang and opt.</td><td>R6, R7, R9, R10</td><td><code>expr.cpp</code>. IR files for <code>sum</code>, <code>dot</code> and <code>dotf</code>.</td><td><span class="badge now">This issue</span></td></tr>
+      <tr><td class="c mono"><a href="#/week-2">2</a></td><td>LLVM-2</td><td>Kaleidoscope chapters 1–3: lexer, parser, IR generation.</td><td>R15</td><td>A front end that makes LLVM IR.</td><td><span class="badge later">Later revision</span></td></tr>
+      <tr><td class="c mono"><a href="#/week-3">3</a></td><td>LLVM-3</td><td>Kaleidoscope chapter 4: JIT and optimizer. Write an LLVM pass.</td><td>R15, “Writing an LLVM Pass”</td><td>A pass plugin for <code>opt</code>.</td><td><span class="badge later">Later revision</span></td></tr>
+      <tr><td class="c mono"><a href="#/week-4">4</a></td><td>MLIR-1</td><td>MLIR paper. Build MLIR from the source code. Toy chapters 1–2.</td><td>MLIR paper (CGO 2021), Toy tutorial</td><td>An MLIR build. <code>toyc-ch2</code>.</td><td><span class="badge later">Later revision</span></td></tr>
+      <tr><td class="c mono"><a href="#/week-5">5</a></td><td>MLIR-2</td><td>Toy chapters 3–4: rewrite patterns and interfaces.</td><td>Toy tutorial, “MLIR for Beginners” (J. Kun)</td><td>A rewrite pattern.</td><td><span class="badge later">Later revision</span></td></tr>
+      <tr><td class="c mono"><a href="#/week-6">6</a></td><td>MLIR-3</td><td>Toy chapters 5–6: lowering to affine and LLVM. A <code>linalg.matmul</code> exercise.</td><td>Toy tutorial, MLIR dialect documents</td><td>The IR of each lowering stage.</td><td><span class="badge later">Later revision</span></td></tr>
+      <tr><td class="c mono"><a href="#/week-7">7</a></td><td>MOJO-1</td><td>Mojo basics: structs, traits, ownership.</td><td>Mojo manual</td><td>Small Mojo programs.</td><td><span class="badge later">Later revision</span></td></tr>
+      <tr><td class="c mono"><a href="#/week-8">8</a></td><td>MOJO-2</td><td>Parameters, SIMD, MLIR in Mojo.</td><td>Mojo manual</td><td>A parametric SIMD function.</td><td><span class="badge later">Later revision</span></td></tr>
+      <tr><td class="c mono"><a href="#/week-9">9</a></td><td>MOJO-3</td><td>A matmul on the CPU: naive, vectorized, tiled, parallel.</td><td>Mojo manual</td><td>A benchmark table.</td><td><span class="badge later">Later revision</span></td></tr>
+      <tr><td class="c mono"><a href="#/week-10">10</a></td><td>GPU-1</td><td>GPU fundamentals. Mojo GPU Puzzles, first part.</td><td>PMPP chapters 1–6, Mojo GPU Puzzles</td><td>Solved puzzles.</td><td><span class="badge later">Later revision</span></td></tr>
+      <tr><td class="c mono"><a href="#/week-11">11</a></td><td>GPU-2</td><td>Mojo GPU Puzzles, second part, on the RTX 5060.</td><td>Mojo GPU Puzzles</td><td>A tiled GPU matmul.</td><td><span class="badge later">Later revision</span></td></tr>
+      <tr><td class="c mono"><a href="#/week-12">12</a></td><td>MAX</td><td>MAX graph API, a custom operation in Mojo, the MAX model server.</td><td>MAX documents</td><td>A custom operation in a MAX graph.</td><td><span class="badge later">Later revision</span></td></tr>
+      <tr><td class="c mono"><a href="#/week-13">13+</a></td><td>PROJECT</td><td>Final project. Select one of three options.</td><td>—</td><td>A project report.</td><td><span class="badge later">Later revision</span></td></tr>
+    </tbody>
+  </table>
+
+  <div class="note"><span class="nh">NOTE:</span>Mojo changes frequently. The Mojo documents are now at mojolang.org. If a blog post and the documents are different, the documents are correct.</div>
+  <div class="note"><span class="nh">NOTE:</span>Modular does not officially support Windows. Modular says that you can try MAX on WSL with a compatible Ubuntu version (R4).</div>
+  <div class="note"><span class="nh">NOTE:</span>R4 lists the RTX 50XX series as “known compatible for development”. R4 also requires NVIDIA driver 580 or later. Your driver is 595.95.</div>
+
+  <h3>Questions for the sessions</h3>
+  <p>The questions for the sessions are in <a href="#/reference/sessions">Session preparation</a>.</p>

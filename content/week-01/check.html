@@ -1,0 +1,60 @@
+<article class="task" id="t-01-90-00-800-801" data-task="01-90-00-800-801" data-week="1" data-title="Week 1 check and close-up" data-time="30 min">
+    <div class="task-head"><span class="tno">TASK 01-90-00-800-801</span><span class="ttl">Week 1 check and close-up</span><span class="time">30 min</span></div>
+    <div class="task-body">
+      <h4>1. General</h4>
+      <p>This check makes sure that you know the important points of Week 1. The close-up records your work in git.</p>
+      <h4>2. Procedure</h4>
+      <div class="subtask">SUBTASK 01-90-00-800-001<span>Self-test</span></div>
+      <ol class="steps">
+        <li class="step"><b class="n">(1)</b><div class="body">Write the answers to the questions in Table 8. Do not look at the answers.</div></li>
+        <li class="step"><b class="n">(2)</b><div class="body">Show the answers. Compare them with your answers.</div></li>
+        <li class="step"><b class="n">(3)</b><div class="body">If an answer is incorrect, do the related task again.</div></li>
+      </ol>
+      <h4>Table 8 · Week 1 questions</h4>
+      <details class="q"><summary><span class="qn">Q1</span>Why does the constructor of BinaryExprAST use std::move?</summary>
+        <div class="a">You cannot copy a <code>std::unique_ptr</code>. <code>std::move</code> moves the ownership of the child node into the member variable.</div></details>
+      <details class="q"><summary><span class="qn">Q2</span>Why does ExprAST have a virtual destructor?</summary>
+        <div class="a">The program deletes each node through a <code>std::unique_ptr&lt;ExprAST&gt;</code>. Without a virtual destructor, the destructor of the derived class does not run. The result is undefined behavior.</div></details>
+      <details class="q"><summary><span class="qn">Q3</span>What does CMAKE_EXPORT_COMPILE_COMMANDS=ON make? Which tool uses it?</summary>
+        <div class="a">It makes the file <code>compile_commands.json</code>. <code>clangd</code> uses it.</div></details>
+      <details class="q"><summary><span class="qn">Q4</span>How many basic blocks did @sum have at -O0? Give their names.</summary>
+        <div class="a">Five: <code>entry</code>, <code>for.cond</code>, <code>for.body</code>, <code>for.inc</code> and <code>for.end</code>.</div></details>
+      <details class="q"><summary><span class="qn">Q5</span>Why does Clang keep local variables in memory at -O0?</summary>
+        <div class="a">It keeps the front end simple. Clang does not have to make SSA form. Later, <code>mem2reg</code> (or <code>sroa</code> in <code>-O2</code>) makes the SSA form.</div></details>
+      <details class="q"><summary><span class="qn">Q6</span>What does %i.0 = phi i32 [ 0, %entry ], [ %inc, %for.inc ] do?</summary>
+        <div class="a">It selects 0 when the control comes from <code>entry</code>. It selects <code>%inc</code> when the control comes from <code>for.inc</code>.</div></details>
+      <details class="q"><summary><span class="qn">Q7</span>What did the -O2 pipeline do with the loop in @sum?</summary>
+        <div class="a">It removed the loop. SCEV calculated the result with a formula equal to n × (n − 1) / 2.</div></details>
+      <details class="q"><summary><span class="qn">Q8</span>Why did the float loop not vectorize without -ffast-math?</summary>
+        <div class="a">A vectorized reduction adds the values in a different sequence. Floating-point addition is not associative, thus the result can change. LLVM does not change the result without permission.</div></details>
+      <details class="q"><summary><span class="qn">Q9</span>What does LLVM use in place of dynamic_cast?</summary>
+        <div class="a"><code>isa&lt;&gt;</code>, <code>cast&lt;&gt;</code> and <code>dyn_cast&lt;&gt;</code>. Each class gives a <code>classof()</code> function. LLVM does not use the C++ RTTI.</div></details>
+      <details class="q"><summary><span class="qn">Q10</span>Which LLVM back end makes code for NVIDIA GPUs?</summary>
+        <div class="a">NVPTX. It makes PTX code. Then <code>ptxas</code> or the NVIDIA driver changes the PTX code into machine code for the GPU.</div></details>
+
+      <div class="subtask">SUBTASK 01-90-00-800-002<span>Close-up</span></div>
+      <ol class="steps">
+        <li class="step"><b class="n">(4)</b><div class="body">Write five lines in <code>~/lab/notes.md</code> about the new items in Week 1.</div></li>
+        <li class="step"><b class="n">(5)</b><div class="body">Go to the lab directory:
+<pre class="cmd" data-sh="WSL"><code>cd ~/lab</code></pre></div></li>
+        <li class="step"><b class="n">(6)</b><div class="body">If <code>~/lab</code> is not a git repository, make it a repository:
+<pre class="cmd" data-sh="WSL"><code>git init</code></pre></div></li>
+        <li class="step"><b class="n">(7)</b><div class="body">Tell git not to record the build directories:
+<pre class="cmd" data-sh="WSL"><code>echo 'build/' &gt;&gt; .gitignore</code></pre></div></li>
+        <li class="step"><b class="n">(8)</b><div class="body">If git does not know your name and e-mail address, set them:
+<pre class="cmd" data-sh="WSL"><code>git config --global user.name "Your Name"
+git config --global user.email "you@example.com"</code></pre></div></li>
+        <li class="step"><b class="n">(9)</b><div class="body">Record the work in git:
+<pre class="cmd" data-sh="WSL"><code>git add -A
+git commit -m "Week 1: C++ refresher and LLVM IR"</code></pre></div></li>
+      </ol>
+    </div>
+  </article>
+
+  <table class="record" data-widget="record" data-tab="week-1">
+    <caption>Record sheet · Week 1</caption>
+    <thead><tr><th>Task</th><th>Title</th><th>Time</th><th>Steps</th><th>Status</th><th>Date</th></tr></thead>
+    <tbody></tbody>
+  </table>
+
+  <div class="next"><b>NEXT REVISION:</b> Revision 1 will add Week 2. Week 2 starts the Kaleidoscope tutorial (R15), chapters 1 to 3: the lexer, the parser and the IR generation with the LLVM C++ API.</div>

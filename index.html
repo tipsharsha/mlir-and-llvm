@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MLIR and LLVM · Training Program</title>
+<link rel="icon" href="assets/icon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=B612:wght@400;700&family=B612+Mono:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="src/app.css">
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar" id="sidebar">
+    <a class="brand" href="#/home">
+      <img src="assets/icon.svg" alt="">
+      <div><b>TM-MLIR</b><span>MLIR and LLVM</span></div>
+    </a>
+    <nav id="nav" aria-label="Weeks and chapters"></nav>
+    <div class="save-note" id="save-note"></div>
+  </aside>
+  <div class="scrim" id="scrim"></div>
+  <div class="main-col">
+    <header class="topbar">
+      <button type="button" id="menu-btn" aria-label="Open the menu">☰</button>
+      <div class="crumb" id="crumb">Home</div>
+      <div class="top-progress"><div class="bar"><i id="top-bar"></i></div><span id="top-label"></span></div>
+    </header>
+    <div id="content" tabindex="-1"><p style="padding:24px">Loading…</p></div>
+  </div>
+</div>
+<noscript><p style="padding:24px">This app needs JavaScript.</p></noscript>
+<script src="src/app.js"></script>
+</body>
+</html>

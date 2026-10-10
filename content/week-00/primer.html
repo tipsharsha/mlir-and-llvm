@@ -1,0 +1,59 @@
+<p>The series uses many GPU and AI terms. This primer explains the ten that appear most. Read it once, then read the digests.</p>
+  <table>
+    <caption>Table 0-5 · Ten ideas</caption>
+    <thead><tr><th class="c">No.</th><th>Idea</th><th>Explanation</th></tr></thead>
+    <tbody>
+      <tr><td class="c">1</td><td>CPU and GPU</td><td>A CPU runs a few threads at high speed. A GPU runs thousands of simple threads at the same time. The math of AI fits the GPU.</td></tr>
+      <tr><td class="c">2</td><td>Kernel</td><td>A function that runs on the GPU. The GPU runs many copies of it at the same time, each on different data.</td></tr>
+      <tr><td class="c">3</td><td>Thread, block, warp</td><td>A kernel starts a grid of blocks. Each block has threads. On NVIDIA hardware, threads run in groups of 32, which are called warps.</td></tr>
+      <tr><td class="c">4</td><td>Memory levels</td><td>Registers are the fastest. Shared memory (SRAM) is on the chip. Global memory (HBM) is large but slow. Data movement often costs more than the math.</td></tr>
+      <tr><td class="c">5</td><td>Tensor Core</td><td>A special GPU unit that multiplies small matrices at high speed. Most of the FLOPs of an AI model run on Tensor Cores.</td></tr>
+      <tr><td class="c">6</td><td>PTX</td><td>An assembly-like language for NVIDIA GPUs. CUDA code compiles to PTX. The driver then makes machine code. The LLVM NVPTX back end also makes PTX.</td></tr>
+      <tr><td class="c">7</td><td>Library, framework, compiler</td><td>A library gives ready kernels (cuBLAS). A framework lets you describe models in Python (PyTorch). A compiler makes kernels for you (TVM, XLA).</td></tr>
+      <tr><td class="c">8</td><td>Kernel fusion</td><td>Several operations run in one kernel. This saves memory traffic. See Figure 0-2.</td></tr>
+      <tr><td class="c">9</td><td>Training and inference</td><td>Training changes the weights of a model and takes a long time. Inference uses the trained model to give answers. GenAI serving is mostly inference at large scale.</td></tr>
+      <tr><td class="c">10</td><td>IR and dialect</td><td>An IR is the form of code between the source and the machine code. LLVM has one IR. MLIR lets you define many IRs, which are called dialects.</td></tr>
+    </tbody>
+  </table>
+  
+<figure class="fig">
+  <svg viewBox="0 0 760 260" role="img" aria-labelledby="ff1">
+    <title id="ff1">Kernel fusion: two kernels with a round trip to global memory, and one fused kernel</title>
+    <defs>
+      <marker id="mf" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#161616"/></marker>
+      <pattern id="hf" width="7" height="7" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="7" height="7" fill="#fdf0f1"/><line x1="0" y1="0" x2="0" y2="7" stroke="#b3001b" stroke-width="1.3" opacity=".3"/></pattern>
+    </defs>
+    <g font-family="B612, Arial, sans-serif" fill="#161616" text-anchor="middle">
+      <text x="10" y="16" font-size="11" font-weight="700" text-anchor="start">WITHOUT FUSION · two kernels and an extra trip to global memory</text>
+      <g stroke="#161616" stroke-width="1.5" fill="#fff">
+        <rect x="10" y="32" width="90" height="46"/><rect x="130" y="32" width="150" height="46"/>
+        <rect x="310" y="32" width="150" height="46" fill="url(#hf)" stroke="#b3001b" stroke-width="2"/>
+        <rect x="490" y="32" width="130" height="46"/><rect x="650" y="32" width="100" height="46"/>
+      </g>
+      <g stroke="#161616" stroke-width="1.5" marker-end="url(#mf)">
+        <line x1="100" y1="55" x2="129" y2="55"/><line x1="280" y1="55" x2="309" y2="55"/>
+        <line x1="460" y1="55" x2="489" y2="55"/><line x1="620" y1="55" x2="649" y2="55"/>
+      </g>
+      <g font-size="12" font-weight="700">
+        <text x="55" y="60">Input</text><text x="205" y="52">Kernel 1</text><text x="385" y="52">GLOBAL MEMORY</text>
+        <text x="555" y="52">Kernel 2</text><text x="700" y="60">Output</text>
+      </g>
+      <g font-size="10.5"><text x="205" y="68">matmul</text><text x="385" y="68">write, then read</text><text x="555" y="68">ReLU</text></g>
+      <text x="385" y="100" font-size="11" fill="#b3001b" font-weight="700">slow, off-chip trip</text>
+      <line x1="10" y1="124" x2="750" y2="124" stroke="#9aa0a6" stroke-dasharray="4 4"/>
+      <text x="10" y="148" font-size="11" font-weight="700" text-anchor="start">WITH FUSION · one kernel, the intermediate result stays on the chip</text>
+      <g stroke="#161616" stroke-width="1.5" fill="#fff">
+        <rect x="10" y="164" width="90" height="46"/>
+        <rect x="130" y="164" width="330" height="46" fill="#eef6fb" stroke="#0369a1" stroke-width="2.2"/>
+        <rect x="490" y="164" width="100" height="46"/>
+      </g>
+      <g stroke="#161616" stroke-width="1.5" marker-end="url(#mf)">
+        <line x1="100" y1="187" x2="129" y2="187"/><line x1="460" y1="187" x2="489" y2="187"/>
+      </g>
+      <g font-size="12" font-weight="700"><text x="55" y="192">Input</text><text x="295" y="184">Fused kernel</text><text x="540" y="192">Output</text></g>
+      <text x="295" y="200" font-size="10.5">matmul + ReLU · data stays in registers</text>
+      <text x="380" y="244" font-size="11" fill="#4a4a4a">Part 6 reports gains of up to about 2 times, which depend on hardware and size.</text>
+    </g>
+  </svg>
+  <figcaption>Figure 0-2 · Kernel fusion, as Part 6 explains it</figcaption>
+</figure>

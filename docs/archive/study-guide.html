@@ -1,0 +1,953 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TM-MLIR-002 · Study Guide · The AI Compute Background</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=B612:wght@400;700&family=B612+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --ink: #161616;
+  --ink2: #4a4a4a;
+  --paper: #fdfdfb;
+  --desk: #d6d9dc;
+  --line: #1d1d1d;
+  --fill: #eceeef;
+  --accent: #0369a1;
+  --warn: #b3001b;
+  --warnbg: #fff4f5;
+  --caut: #8a5300;
+  --cautbg: #fff8e6;
+  --ok: #1d6b35;
+  --okbg: #eaf6ee;
+  --mono: "B612 Mono", Consolas, "Courier New", monospace;
+}
+* { box-sizing: border-box; }
+html { scroll-padding-top: 64px; }
+body {
+  margin: 0;
+  background: var(--desk);
+  color: var(--ink);
+  font: 15px/1.5 "B612", Arial, Helvetica, sans-serif;
+}
+code, pre, .mono { font-family: var(--mono); }
+code { font-size: .92em; }
+a { color: var(--accent); }
+
+/* Running header */
+.runhead {
+  position: sticky; top: 0; z-index: 10;
+  background: #121212; color: #f2f2f2;
+  font-size: 11.5px; letter-spacing: .07em; text-transform: uppercase;
+}
+.runhead .row {
+  display: grid; grid-template-columns: 1fr auto 1fr; gap: 16px;
+  padding: 7px 18px; align-items: center;
+}
+.runhead .mid { font-weight: 700; text-align: center; }
+.runhead .right { text-align: right; font-family: var(--mono); }
+.progress { height: 4px; background: #333; }
+.progress > i { display: block; height: 100%; width: 0; background: #38bdf8; transition: width .3s; }
+
+/* Sheet */
+.sheet {
+  max-width: 980px; margin: 28px auto; background: var(--paper);
+  border: 1px solid #9aa0a6; box-shadow: 0 2px 12px rgba(0,0,0,.14);
+  padding: 40px 56px 56px;
+}
+
+/* Title page */
+.titlepage { border: 3px double var(--line); padding: 34px 38px 28px; }
+.titlepage .top { display: flex; justify-content: space-between; align-items: flex-start; }
+.titlepage .top img { width: 56px; height: 56px; }
+.titlepage .docno { font-family: var(--mono); font-size: 13px; text-align: right; line-height: 1.6; }
+.titlepage .kind { margin-top: 38px; font-size: 14px; letter-spacing: .32em; font-weight: 700; }
+.titlepage h1 { font-size: 34px; line-height: 1.15; margin: 6px 0 10px; letter-spacing: .02em; text-transform: uppercase; }
+.titlepage .sub { font-size: 16px; color: var(--ink2); margin-bottom: 26px; }
+.titlepage .contains { border-top: 1.5px solid var(--line); padding-top: 12px; font-size: 13.5px; }
+
+/* Chapters */
+.chapter { margin-top: 58px; border-top: 3px solid var(--line); padding-top: 8px; }
+.chapter > header { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; }
+.chapter > header .num { font-family: var(--mono); font-size: 13px; font-weight: 700; }
+.chapter > header .wk { font-size: 11.5px; letter-spacing: .1em; text-transform: uppercase; color: var(--ink2); }
+h2 { font-size: 22px; letter-spacing: .04em; margin: 6px 0 16px; text-transform: uppercase; }
+h3 { font-size: 15px; letter-spacing: .05em; text-transform: uppercase; margin: 26px 0 8px; }
+p { margin: 8px 0; }
+
+/* Tables */
+table { border-collapse: collapse; width: 100%; font-size: 13.5px; margin: 8px 0 12px; }
+th, td { border: 1px solid #7a7a7a; padding: 5px 8px; text-align: left; vertical-align: top; }
+th { background: var(--fill); text-transform: uppercase; font-size: 11.5px; letter-spacing: .05em; }
+caption { caption-side: top; text-align: left; font-weight: 700; font-size: 12.5px; text-transform: uppercase; letter-spacing: .05em; padding-bottom: 4px; }
+td.c, th.c { text-align: center; }
+tr.now td { background: #eef6fb; }
+tr.ok td { background: var(--okbg); }
+
+.badge { display: inline-block; font-size: 10.5px; letter-spacing: .08em; text-transform: uppercase; padding: 1px 6px; border: 1px solid #777; white-space: nowrap; }
+.badge.now { background: var(--accent); border-color: var(--accent); color: #fff; }
+.badge.later { border-style: dashed; color: var(--ink2); }
+
+/* Tasks */
+.task { border: 1.5px solid var(--line); margin: 28px 0; background: #fff; }
+.task-head {
+  display: grid; grid-template-columns: auto 1fr auto; gap: 14px; align-items: center;
+  background: var(--fill); border-bottom: 1.5px solid var(--line); padding: 8px 14px;
+}
+.task-head .tno { font-family: var(--mono); font-weight: 700; font-size: 12.5px; white-space: nowrap; }
+.task-head .ttl { font-weight: 700; text-transform: uppercase; font-size: 14.5px; letter-spacing: .02em; }
+.task-head .time { font-size: 11.5px; border: 1px solid var(--line); padding: 2px 8px; background: #fff; white-space: nowrap; }
+.task-body { padding: 4px 18px 14px; }
+.task h4 { font-size: 12.5px; text-transform: uppercase; letter-spacing: .07em; margin: 18px 0 6px; }
+.subtask { font-family: var(--mono); font-size: 12px; font-weight: 700; margin: 18px 0 4px; padding-bottom: 3px; border-bottom: 1px dashed #888; }
+.subtask span { font-family: "B612", Arial, sans-serif; font-weight: 700; margin-left: 10px; text-transform: uppercase; }
+
+ol.steps { list-style: none; margin: 0; padding: 0; }
+li.step { display: grid; grid-template-columns: 24px 42px minmax(0, 1fr); gap: 2px; padding: 5px 0; align-items: start; }
+li.step > input { margin: 4px 0 0; width: 16px; height: 16px; accent-color: var(--ok); cursor: pointer; }
+li.step .n { font-weight: 700; padding-top: 1px; }
+li.step .body { min-width: 0; }
+li.step.done .n { color: var(--ok); }
+li.step.done .body { color: #5b5b5b; }
+.tag { display: inline-block; font-size: 10px; letter-spacing: .09em; border: 1px solid #888; padding: 0 5px; margin-right: 6px; color: var(--ink2); vertical-align: 1px; }
+
+.signoff {
+  border-top: 1.5px solid var(--line); display: flex; justify-content: space-between; gap: 12px;
+  padding: 7px 14px; font-size: 11.5px; text-transform: uppercase; letter-spacing: .06em; background: #fafafa;
+}
+.signoff.complete { background: var(--okbg); color: var(--ok); font-weight: 700; }
+
+/* Warnings, cautions, notes */
+.warning, .caution { border: 2px solid; margin: 12px 0; padding: 8px 16px 10px; }
+.warning { border-color: var(--warn); background: var(--warnbg); }
+.caution { border-color: var(--caut); background: var(--cautbg); }
+.warning .wh, .caution .wh { text-align: center; font-weight: 700; letter-spacing: .28em; margin-bottom: 4px; }
+.warning .wh { color: var(--warn); }
+.caution .wh { color: var(--caut); }
+.warning p, .caution p { margin: 4px 0; }
+.note { margin: 8px 0; padding: 3px 0 3px 12px; border-left: 3px solid #9aa0a6; }
+.note .nh { font-weight: 700; letter-spacing: .08em; margin-right: 6px; }
+
+/* Code */
+pre {
+  position: relative; background: #f3f4f5; border: 1px solid #c4c7ca;
+  padding: 10px 12px; margin: 6px 0; overflow-x: auto;
+  font-size: 12.8px; line-height: 1.5;
+}
+pre.cmd { padding-top: 22px; }
+pre.cmd::before {
+  content: attr(data-sh); position: absolute; top: 0; left: 0;
+  font: 700 9.5px/1 "B612", Arial, sans-serif; letter-spacing: .1em;
+  background: #222; color: #fff; padding: 3px 7px;
+}
+pre.cmd[data-sh="PS"]::before { background: #1e3a8a; }
+pre.code { background: #fbfbf8; }
+.copy {
+  position: absolute; top: 4px; right: 4px;
+  font: 700 9.5px/1 "B612", Arial, sans-serif; letter-spacing: .08em; text-transform: uppercase;
+  background: #fff; border: 1px solid #888; padding: 4px 7px; cursor: pointer; color: var(--ink);
+}
+.copy:hover { background: var(--fill); }
+.co {
+  display: inline-block; width: 18px; height: 18px; border-radius: 50%;
+  border: 1.5px solid var(--accent); color: var(--accent); background: #fff;
+  font: 700 10px/15px "B612", Arial, sans-serif; text-align: center; margin-left: 8px; vertical-align: 1px;
+}
+
+/* Figures */
+figure.fig { border: 1px solid #7a7a7a; margin: 18px 0; padding: 14px 16px 10px; background: #fff; }
+figure.fig svg { display: block; width: 100%; height: auto; }
+figcaption { text-align: center; font-weight: 700; text-transform: uppercase; font-size: 12px; letter-spacing: .06em; margin-top: 10px; }
+.key { font-size: 13px; }
+.key td:first-child { width: 44px; text-align: center; font-weight: 700; }
+
+/* Questions */
+details.q { border: 1px solid #9a9a9a; margin: 6px 0; background: #fff; }
+details.q summary { cursor: pointer; padding: 6px 10px; font-weight: 700; }
+details.q summary .qn { font-family: var(--mono); margin-right: 8px; }
+details.q .a { padding: 6px 14px 10px; border-top: 1px dashed #9a9a9a; background: #f7faf7; }
+details.solution { border: 1px solid #9a9a9a; margin: 12px 0; }
+details.solution summary { cursor: pointer; padding: 6px 10px; font-weight: 700; text-transform: uppercase; font-size: 12.5px; letter-spacing: .05em; background: var(--fill); }
+details.solution pre { margin: 0; border: 0; border-top: 1px solid #c4c7ca; }
+
+.toc { columns: 2; column-gap: 32px; font-size: 13.5px; padding-left: 0; list-style: none; }
+.toc li { break-inside: avoid; padding: 2px 0; }
+.toc .mono { display: inline-block; width: 74px; font-size: 12px; }
+.btn {
+  font: 700 11px/1 "B612", Arial, sans-serif; letter-spacing: .08em; text-transform: uppercase;
+  background: #fff; border: 1.5px solid var(--line); padding: 7px 12px; cursor: pointer;
+}
+.btn:hover { background: var(--fill); }
+.next { border: 1.5px dashed #777; padding: 10px 14px; margin-top: 18px; font-size: 13.5px; }
+.end { text-align: center; margin-top: 48px; font-weight: 700; letter-spacing: .2em; font-size: 12px; }
+
+@media (max-width: 760px) {
+  .sheet { padding: 20px 16px 32px; margin: 0; }
+  .titlepage { padding: 22px 18px; }
+  .runhead .row { grid-template-columns: 1fr; }
+  .runhead .left, .runhead .right { display: none; }
+  .task-head { grid-template-columns: 1fr; gap: 4px; }
+  li.step { grid-template-columns: 22px 36px minmax(0, 1fr); }
+  .toc { columns: 1; }
+}
+@media print {
+  @page { size: A4; margin: 14mm; }
+  body { background: #fff; font-size: 11pt; }
+  .runhead, .copy, .noprint { display: none !important; }
+  .sheet { box-shadow: none; border: 0; margin: 0; padding: 0; max-width: none; }
+  .chapter { break-before: page; }
+  pre { white-space: pre-wrap; }
+  a { color: inherit; text-decoration: none; }
+}
+
+.srcline { font-size: 12.5px; color: var(--ink2); margin: 6px 0 2px; }
+.srcline .badge { margin-right: 8px; }
+ol.kp { margin: 6px 0 6px 0; padding-left: 28px; }
+ol.kp li { padding: 3px 0 3px 4px; }
+ol.kp li::marker { font-weight: 700; font-family: var(--mono); font-size: 12px; }
+.lst { border: 1px solid #7a7a7a; background: #fafbfc; padding: 8px 16px 10px; margin: 12px 0; }
+.lst .lh { font-weight: 700; text-transform: uppercase; letter-spacing: .06em; font-size: 12px; margin-bottom: 4px; }
+td.pos { background: #eef7f0; } td.neg { background: #fdf0f1; } td.mix { background: #fff8e8; }
+table.score td, table.score th { font-size: 12.5px; }
+table.score td:first-child { font-weight: 700; width: 17%; }
+.signoff label { display: flex; align-items: center; gap: 8px; cursor: pointer; }
+.signoff input { width: 16px; height: 16px; accent-color: var(--ok); cursor: pointer; }
+.what { border: 2px solid var(--accent); background: #f2f8fc; padding: 8px 16px 10px; margin: 12px 0; }
+.what .wh { text-align: center; font-weight: 700; letter-spacing: .2em; color: var(--accent); margin-bottom: 4px; }
+.plan td:first-child { white-space: nowrap; font-weight: 700; }
+.glossary td:first-child { font-weight: 700; width: 22%; }
+.glossary td:last-child { width: 14%; font-family: var(--mono); font-size: 12px; }
+</style>
+</head>
+<body>
+
+<div class="runhead">
+  <div class="row">
+    <div class="left">Study guide · AI compute background</div>
+    <div class="mid" id="runhead-section">Front matter</div>
+    <div class="right">TM-MLIR-002 · Rev 0 · <span id="progress-label">0 / 0 read</span></div>
+  </div>
+  <div class="progress"><i id="progress-bar"></i></div>
+</div>
+
+<main class="sheet">
+
+<section class="titlepage" data-section="Front matter">
+  <div class="top">
+    <img src="../../assets/icon.svg" alt="">
+    <div class="docno">TM-MLIR-002<br>Issue 1 · Revision 0<br>2026-10-10</div>
+  </div>
+  <div class="kind">STUDY GUIDE</div>
+  <h1>The AI Compute Background</h1>
+  <div class="sub">Reading companion to TM-MLIR-001 · Digest of “Democratizing AI Compute” (Parts 1 to 11) and of the LLVM chapter</div>
+  <div class="contains">
+    <p><b>THIS ISSUE CONTAINS:</b> an overview, a primer, 11 digests of the series, a digest of the LLVM chapter, preparation for the sessions and a glossary.</p>
+    <p><b>LANGUAGE STANDARD:</b> ASD-STE100 Simplified Technical English.</p>
+  </div>
+</section>
+
+<!-- ============================================================ 00 -->
+<section class="chapter" id="c-00" data-section="00-00-00 · How to use this guide">
+  <header><span class="num">00-00-00</span><span class="wk">General</span></header>
+  <h2>How to use this guide</h2>
+
+  <h3>1. Purpose</h3>
+  <p>This guide gives you the content of the reading in Week 0 and of the reading before the sessions. You can read it in place of a search.</p>
+  <p>It replaces the reading steps of TASK 00-30-00-200-801 and TASK 00-30-00-200-802 of the manual, if you accept a digest in place of the original.</p>
+
+  <h3>2. What a digest gives you</h3>
+  <ul>
+    <li>The main idea, in two or three sentences.</li>
+    <li>The key points, in the order of the source.</li>
+    <li>The terms and the numbers that the source uses.</li>
+    <li>The link to your program, and three questions to test yourself.</li>
+  </ul>
+
+  <div class="caution"><div class="wh">CAUTION</div><p>THE DIGESTS ARE SUMMARIES. THEY ARE NOT COPIES. Check a number or a quotation in the original source before you use it in public. Each digest has a link to the original.</p></div>
+  <div class="note"><span class="nh">NOTE:</span>The digests were prepared on 2026-10-10 from the web pages of the sources. The series is from 2025. The LLVM chapter is from 2011.</div>
+  <div class="caution"><div class="wh">CAUTION</div><p>CHRIS LATTNER IS A CO-FOUNDER OF MODULAR. The series gives his view. Parts 10 and 11 describe the products of his company, and the checklist in Part 11 is a self-assessment. Read them with care.</p></div>
+
+  <h3>3. Reading plan</h3>
+  <p>Table 1 gives the sources. The first six are for Week 0. The other six are for the time before the sessions. The “read” box of each digest saves your progress in this browser.</p>
+  <p>All the digests together take about 45 minutes. The whole guide takes about one hour. The original sources take much longer.</p>
+  <table>
+    <caption>Table 1 · Sources and reading order</caption>
+    <thead><tr><th>Source</th><th>Title</th><th>Digest</th><th>When</th></tr></thead>
+    <tbody><tr class="now"><td class="mono">Part 1</td><td>DeepSeek’s impact on AI</td><td><a href="#r-p1">Digest</a></td><td>Week 0</td></tr><tr class="now"><td class="mono">Part 2</td><td>What exactly is “CUDA”?</td><td><a href="#r-p2">Digest</a></td><td>Week 0</td></tr><tr class="now"><td class="mono">Part 3</td><td>How did CUDA succeed?</td><td><a href="#r-p3">Digest</a></td><td>Week 0</td></tr><tr class="now"><td class="mono">Part 4</td><td>CUDA is the incumbent, but is it any good?</td><td><a href="#r-p4">Digest</a></td><td>Week 0</td></tr><tr class="now"><td class="mono">Part 8</td><td>What about the MLIR compiler infrastructure?</td><td><a href="#r-p8">Digest</a></td><td>Week 0</td></tr><tr class="now"><td class="mono">R2</td><td>LLVM (Architecture of Open Source Applications)</td><td><a href="#r-aosa">Digest</a></td><td>Week 0</td></tr><tr><td class="mono">Part 5</td><td>What about OpenCL and CUDA C++ alternatives?</td><td><a href="#r-p5">Digest</a></td><td>Before the sessions</td></tr><tr><td class="mono">Part 6</td><td>What about TVM, XLA, and AI compilers?</td><td><a href="#r-p6">Digest</a></td><td>Before the sessions</td></tr><tr><td class="mono">Part 7</td><td>What about Triton and Python eDSLs?</td><td><a href="#r-p7">Digest</a></td><td>Before the sessions</td></tr><tr><td class="mono">Part 9</td><td>Why do HW companies struggle to build AI software?</td><td><a href="#r-p9">Digest</a></td><td>Before the sessions</td></tr><tr><td class="mono">Part 10</td><td>Modular’s bet to break out of the Matrix</td><td><a href="#r-p10">Digest</a></td><td>Before the sessions</td></tr><tr><td class="mono">Part 11</td><td>How is Modular democratizing AI compute?</td><td><a href="#r-p11">Digest</a></td><td>Before the sessions</td></tr></tbody>
+  </table>
+  <table class="plan">
+    <caption>Table 2 · Suggested reading sessions (10 to 20 minutes each, plus the self-tests)</caption>
+    <thead><tr><th>Session</th><th>Read</th></tr></thead>
+    <tbody>
+      <tr><td>1</td><td>Chapters 10-00 and 20-00 (overview and primer). Part 1. Part 2.</td></tr>
+      <tr><td>2</td><td>Part 3. Part 4. The LLVM chapter (R2). Then do TASK 01-20-00-200-801 of the manual.</td></tr>
+      <tr><td>3</td><td>Part 6, then Part 8. Part 6 gives the background that Part 8 uses.</td></tr>
+      <tr><td>4</td><td>Part 5. Part 7.</td></tr>
+      <tr><td>5</td><td>Part 9. Part 10. Part 11. Then Chapter 70-00 (preparation for the sessions).</td></tr>
+    </tbody>
+  </table>
+  <p class="noprint"><button type="button" class="btn" id="reset">Clear all read marks</button></p>
+</section>
+
+<!-- ============================================================ 10 -->
+<section class="chapter" id="c-10" data-section="10-00-00 · Overview">
+  <header><span class="num">10-00-00</span><span class="wk">General</span></header>
+  <h2>Overview of the series</h2>
+
+  <h3>1. The story in ten sentences</h3>
+  <ol class="kp">
+    <li>AI needs a lot of compute, and the demand grows. (Part 1)</li>
+    <li>Most AI compute runs on NVIDIA GPUs, which developers program with CUDA. (Parts 2 and 3)</li>
+    <li>CUDA is a whole platform: a language, a driver, libraries and complete solutions. NVIDIA owns all of it. (Part 2)</li>
+    <li>CUDA won through strategy: one compatible GPU line, strong libraries and good timing with AI. (Part 3)</li>
+    <li>CUDA is hard to use and ties code to NVIDIA hardware. It also costs NVIDIA a lot. (Part 4)</li>
+    <li>Others tried to replace it: OpenCL and SYCL (Part 5), TVM and XLA (Part 6), Triton (Part 7) and MLIR (Part 8).</li>
+    <li>They failed to unify the field for similar reasons: slow committees, forks, slow evolution, weak speed on NVIDIA hardware and mixed incentives.</li>
+    <li>Hardware companies cannot fix this alone, because their incentives and structure work against long-term software. (Part 9)</li>
+    <li>Modular bets on a new stack, built in closed research and then opened. (Part 10)</li>
+    <li>The stack has layers: Mojo, MAX and Mammoth. Modular says that one build runs on NVIDIA GPUs, AMD GPUs and CPUs. (Part 11)</li>
+  </ol>
+
+  
+<figure class="fig">
+  <svg viewBox="0 0 760 300" role="img" aria-labelledby="fa1">
+    <title id="fa1">Argument map of the series, Parts 1 to 11</title>
+    <defs><marker id="ma" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#161616"/></marker></defs>
+    <g font-family="B612, Arial, sans-serif" fill="#161616">
+      <g stroke="#161616" stroke-width="1.5" fill="#fff">
+        <rect x="10" y="10" width="110" height="160"/>
+        <rect x="140" y="10" width="120" height="160"/>
+        <rect x="280" y="10" width="300" height="160"/>
+        <rect x="600" y="10" width="150" height="160"/>
+        <rect x="280" y="215" width="470" height="76" fill="#eef6fb" stroke="#0369a1" stroke-width="2.2"/>
+      </g>
+      <g stroke="#161616" stroke-width="1.5" fill="#f4f5f6">
+        <rect x="292" y="62" width="132" height="42"/><rect x="436" y="62" width="132" height="42"/>
+        <rect x="292" y="112" width="132" height="42"/><rect x="436" y="112" width="132" height="42"/>
+      </g>
+      <g stroke="#161616" stroke-width="1.5" marker-end="url(#ma)">
+        <line x1="120" y1="90" x2="139" y2="90"/><line x1="260" y1="90" x2="279" y2="90"/>
+        <line x1="580" y1="90" x2="599" y2="90"/><line x1="675" y1="170" x2="675" y2="214"/>
+      </g>
+      <g text-anchor="middle">
+        <text x="65" y="32" font-size="11" font-weight="700" fill="#0369a1">PART 1</text>
+        <text x="65" y="56" font-size="13" font-weight="700">WHY NOW</text>
+        <text x="65" y="78" font-size="11">AI demand grows.</text><text x="65" y="94" font-size="11">Cost must fall.</text>
+        <text x="65" y="118" font-size="11">DeepSeek: better use</text><text x="65" y="134" font-size="11">of hardware helps.</text>
+        <text x="200" y="32" font-size="11" font-weight="700" fill="#0369a1">PARTS 2–4</text>
+        <text x="200" y="56" font-size="13" font-weight="700">THE CUDA</text><text x="200" y="72" font-size="13" font-weight="700">PLATFORM</text>
+        <text x="200" y="98" font-size="11">What it is (2)</text><text x="200" y="114" font-size="11">Why it won (3)</text><text x="200" y="130" font-size="11">Is it good? (4)</text>
+        <text x="430" y="32" font-size="11" font-weight="700" fill="#0369a1">PARTS 5–8</text>
+        <text x="430" y="52" font-size="13" font-weight="700">FOUR ATTEMPTS TO REPLACE IT</text>
+        <text x="358" y="80" font-size="11" font-weight="700">OpenCL, SYCL</text><text x="358" y="96" font-size="11">Part 5</text>
+        <text x="502" y="80" font-size="11" font-weight="700">TVM, XLA</text><text x="502" y="96" font-size="11">Part 6</text>
+        <text x="358" y="130" font-size="11" font-weight="700">Triton, eDSLs</text><text x="358" y="146" font-size="11">Part 7</text>
+        <text x="502" y="130" font-size="11" font-weight="700">MLIR</text><text x="502" y="146" font-size="11">Part 8</text>
+        <text x="675" y="32" font-size="11" font-weight="700" fill="#0369a1">PART 9</text>
+        <text x="675" y="56" font-size="13" font-weight="700">WHY HARDWARE</text><text x="675" y="72" font-size="13" font-weight="700">COMPANIES FAIL</text>
+        <text x="675" y="98" font-size="11">Incentives, priorities,</text><text x="675" y="114" font-size="11">software cost.</text>
+        <text x="515" y="238" font-size="11" font-weight="700" fill="#0369a1">PARTS 10–11</text>
+        <text x="515" y="260" font-size="13" font-weight="700">MODULAR’S ANSWER</text>
+        <text x="515" y="280" font-size="11">Closed research, then open · Mojo, MAX, Mammoth</text>
+      </g>
+      <text x="10" y="200" font-size="11" fill="#4a4a4a">Each box is a step in the argument. Arrows show the order.</text>
+    </g>
+  </svg>
+  <figcaption>Figure 1 · Argument map of the series</figcaption>
+</figure>
+
+  <h3>2. Timeline</h3>
+  <table>
+    <caption>Table 3 · Dates in the sources</caption>
+    <thead><tr><th>Date</th><th>Event</th><th>Source</th></tr></thead>
+    <tbody>
+      <tr><td class="mono">Dec 2000</td><td>The LLVM project begins.</td><td class="mono">R2</td></tr>
+      <tr><td class="mono">2001</td><td>NVIDIA GeForce3. The first GPU with programmable shaders.</td><td class="mono">P2</td></tr>
+      <tr><td class="mono">2006</td><td>CUDA is launched. (Part 4 gives 2007.)</td><td class="mono">P2, P4</td></tr>
+      <tr><td class="mono">2008</td><td>Apple builds OpenCL. Lattner is a lead engineer.</td><td class="mono">P5</td></tr>
+      <tr><td class="mono">2012</td><td>AlexNet trains on two GeForce GTX 580 GPUs with CUDA.</td><td class="mono">P2, P3</td></tr>
+      <tr><td class="mono">2014 · 2015 · 2016</td><td>cuDNN · TensorFlow · PyTorch. TVM starts at about this time.</td><td class="mono">P2, P6</td></tr>
+      <tr><td class="mono">2017</td><td>Lattner joins Google to lead TPU software.</td><td class="mono">P1, P6</td></tr>
+      <tr><td class="mono">2018</td><td>AI software is fragmented. MLIR starts at Google Brain. The TVM paper appears.</td><td class="mono">P6, P8</td></tr>
+      <tr><td class="mono">2019</td><td>The Triton research paper.</td><td class="mono">P7</td></tr>
+      <tr><td class="mono">Late 2022</td><td>ChatGPT launches. (Part 9 says 2023.)</td><td class="mono">P3, P9</td></tr>
+      <tr><td class="mono">Mar 2023</td><td>XLA is renamed OpenXLA.</td><td class="mono">P6</td></tr>
+      <tr><td class="mono">Late 2024</td><td>NVIDIA acquires OctoAI, the company of the TVM core developers.</td><td class="mono">P6</td></tr>
+      <tr><td class="mono">30 Jan 2025</td><td>Part 1 is published. Parts 2 to 9 follow until 22 April.</td><td class="mono">P1–P9</td></tr>
+      <tr><td class="mono">8 May 2025</td><td>Part 10. Modular opens its platform.</td><td class="mono">P10</td></tr>
+      <tr><td class="mono">20 Jun 2025</td><td>Part 11. The Modular Platform and its checklist.</td><td class="mono">P11</td></tr>
+    </tbody>
+  </table>
+
+  <h3>3. Scorecard</h3>
+  <p>Part 5 gives seven requirements for a successful unifier. Later parts score projects against them. Table 4 puts these scores together.</p>
+  <div class="note"><span class="nh">NOTE:</span>Each cell gives the words or the rating of the article. A dash means that the article does not rate the item. The last column is the company’s own claim.</div>
+  <table class="score">
+    <caption>Table 4 · The seven requirements, scored by Lattner</caption>
+    <thead><tr><th>Requirement</th><th>OpenCL, SYCL (Part 5)</th><th>TVM, XLA (Part 6)</th><th>Triton (Part 7)</th><th>MLIR (Part 8)</th><th>Modular (Part 11)</th></tr></thead>
+    <tbody>
+      <tr><td>Reference implementation</td><td class="neg">No. A specification and tests only.</td><td class="pos">Yes. Both give working code.</td><td class="pos">Yes.</td><td class="neg">Poor. Building blocks only.</td><td class="pos">Claimed. Language, framework, runtime, cluster layer.</td></tr>
+      <tr><td>Leadership and vision</td><td class="mix">A committee.</td><td class="mix">Mixed. The vision does not match the hardware teams.</td><td class="mix">OpenAI owns the roadmap.</td><td class="neg">Poor, but it improves.</td><td class="pos">Claimed.</td></tr>
+      <tr><td>Top speed on the leader’s hardware</td><td class="neg">5 to 10 times slower than CUDA.</td><td class="mix">Mixed. GPUs need CUDA libraries.</td><td class="neg">About 20% behind CUDA on H100.</td><td class="neg">Poor. 15–20% left unused.</td><td class="pos">Claimed on Hopper and Blackwell.</td></tr>
+      <tr><td>Fast evolution</td><td class="neg">Slow. Committee speed.</td><td class="neg">Not ready for GenAI.</td><td class="neg">Slow.</td><td class="pos">Good.</td><td class="pos">A release every 6–8 weeks.</td></tr>
+      <tr><td>Developer love</td><td class="neg">Poor.</td><td class="mix">Mixed. XLA good. TVM compiles slowly.</td><td class="pos">Strong.</td><td class="mix">Mixed. Hard for ML developers.</td><td class="pos">Claimed.</td></tr>
+      <tr><td>Open community</td><td>—</td><td class="pos">Good.</td><td class="neg">Limited openness.</td><td class="pos">Very good.</td><td class="pos">Claimed. Open source.</td></tr>
+      <tr><td>No fragmentation</td><td class="neg">No. Forks and extensions.</td><td class="neg">No. TVM forks. XLA stays downstream.</td><td class="neg">Fragmented across vendors.</td><td class="neg">Very poor.</td><td class="pos">Claimed. One release process.</td></tr>
+    </tbody>
+  </table>
+  <div class="note"><span class="nh">NOTE:</span>Part 10 lists five success criteria. Part 11 lists twelve checklist items. The seven requirements above are the common base for the series.</div>
+</section>
+
+<!-- ============================================================ 20 -->
+<section class="chapter" id="c-20" data-section="20-00-00 · Primer">
+  <header><span class="num">20-00-00</span><span class="wk">General</span></header>
+  <h2>Primer: ten ideas to know before you read</h2>
+  <p>The series uses many GPU and AI terms. This primer explains the ten that appear most. Read it once, then read the digests.</p>
+  <table>
+    <caption>Table 5 · Ten ideas</caption>
+    <thead><tr><th class="c">No.</th><th>Idea</th><th>Explanation</th></tr></thead>
+    <tbody>
+      <tr><td class="c">1</td><td>CPU and GPU</td><td>A CPU runs a few threads at high speed. A GPU runs thousands of simple threads at the same time. The math of AI fits the GPU.</td></tr>
+      <tr><td class="c">2</td><td>Kernel</td><td>A function that runs on the GPU. The GPU runs many copies of it at the same time, each on different data.</td></tr>
+      <tr><td class="c">3</td><td>Thread, block, warp</td><td>A kernel starts a grid of blocks. Each block has threads. On NVIDIA hardware, threads run in groups of 32, which are called warps.</td></tr>
+      <tr><td class="c">4</td><td>Memory levels</td><td>Registers are the fastest. Shared memory (SRAM) is on the chip. Global memory (HBM) is large but slow. Data movement often costs more than the math.</td></tr>
+      <tr><td class="c">5</td><td>Tensor Core</td><td>A special GPU unit that multiplies small matrices at high speed. Most of the FLOPs of an AI model run on Tensor Cores.</td></tr>
+      <tr><td class="c">6</td><td>PTX</td><td>An assembly-like language for NVIDIA GPUs. CUDA code compiles to PTX. The driver then makes machine code. The LLVM NVPTX back end also makes PTX.</td></tr>
+      <tr><td class="c">7</td><td>Library, framework, compiler</td><td>A library gives ready kernels (cuBLAS). A framework lets you describe models in Python (PyTorch). A compiler makes kernels for you (TVM, XLA).</td></tr>
+      <tr><td class="c">8</td><td>Kernel fusion</td><td>Several operations run in one kernel. This saves memory traffic. See Figure 2.</td></tr>
+      <tr><td class="c">9</td><td>Training and inference</td><td>Training changes the weights of a model and takes a long time. Inference uses the trained model to give answers. GenAI serving is mostly inference at large scale.</td></tr>
+      <tr><td class="c">10</td><td>IR and dialect</td><td>An IR is the form of code between the source and the machine code. LLVM has one IR. MLIR lets you define many IRs, which are called dialects.</td></tr>
+    </tbody>
+  </table>
+  
+<figure class="fig">
+  <svg viewBox="0 0 760 260" role="img" aria-labelledby="ff1">
+    <title id="ff1">Kernel fusion: two kernels with a round trip to global memory, and one fused kernel</title>
+    <defs>
+      <marker id="mf" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#161616"/></marker>
+      <pattern id="hf" width="7" height="7" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="7" height="7" fill="#fdf0f1"/><line x1="0" y1="0" x2="0" y2="7" stroke="#b3001b" stroke-width="1.3" opacity=".3"/></pattern>
+    </defs>
+    <g font-family="B612, Arial, sans-serif" fill="#161616" text-anchor="middle">
+      <text x="10" y="16" font-size="11" font-weight="700" text-anchor="start">WITHOUT FUSION · two kernels and an extra trip to global memory</text>
+      <g stroke="#161616" stroke-width="1.5" fill="#fff">
+        <rect x="10" y="32" width="90" height="46"/><rect x="130" y="32" width="150" height="46"/>
+        <rect x="310" y="32" width="150" height="46" fill="url(#hf)" stroke="#b3001b" stroke-width="2"/>
+        <rect x="490" y="32" width="130" height="46"/><rect x="650" y="32" width="100" height="46"/>
+      </g>
+      <g stroke="#161616" stroke-width="1.5" marker-end="url(#mf)">
+        <line x1="100" y1="55" x2="129" y2="55"/><line x1="280" y1="55" x2="309" y2="55"/>
+        <line x1="460" y1="55" x2="489" y2="55"/><line x1="620" y1="55" x2="649" y2="55"/>
+      </g>
+      <g font-size="12" font-weight="700">
+        <text x="55" y="60">Input</text><text x="205" y="52">Kernel 1</text><text x="385" y="52">GLOBAL MEMORY</text>
+        <text x="555" y="52">Kernel 2</text><text x="700" y="60">Output</text>
+      </g>
+      <g font-size="10.5"><text x="205" y="68">matmul</text><text x="385" y="68">write, then read</text><text x="555" y="68">ReLU</text></g>
+      <text x="385" y="100" font-size="11" fill="#b3001b" font-weight="700">slow, off-chip trip</text>
+      <line x1="10" y1="124" x2="750" y2="124" stroke="#9aa0a6" stroke-dasharray="4 4"/>
+      <text x="10" y="148" font-size="11" font-weight="700" text-anchor="start">WITH FUSION · one kernel, the intermediate result stays on the chip</text>
+      <g stroke="#161616" stroke-width="1.5" fill="#fff">
+        <rect x="10" y="164" width="90" height="46"/>
+        <rect x="130" y="164" width="330" height="46" fill="#eef6fb" stroke="#0369a1" stroke-width="2.2"/>
+        <rect x="490" y="164" width="100" height="46"/>
+      </g>
+      <g stroke="#161616" stroke-width="1.5" marker-end="url(#mf)">
+        <line x1="100" y1="187" x2="129" y2="187"/><line x1="460" y1="187" x2="489" y2="187"/>
+      </g>
+      <g font-size="12" font-weight="700"><text x="55" y="192">Input</text><text x="295" y="184">Fused kernel</text><text x="540" y="192">Output</text></g>
+      <text x="295" y="200" font-size="10.5">matmul + ReLU · data stays in registers</text>
+      <text x="380" y="244" font-size="11" fill="#4a4a4a">Part 6 reports gains of up to about 2 times, which depend on hardware and size.</text>
+    </g>
+  </svg>
+  <figcaption>Figure 2 · Kernel fusion, as Part 6 explains it</figcaption>
+</figure>
+</section>
+
+<!-- ============================================================ 30 -->
+<section class="chapter" id="c-30" data-section="30-00-00 · Parts 1 to 4 · CUDA">
+  <header><span class="num">30-00-00</span><span class="wk">R1 · Parts 1 to 4</span></header>
+  <h2>Parts 1 to 4 · The CUDA story</h2>
+  <p>These four parts tell what CUDA is, why it won and what it costs. They are required reading for Week 0.</p>
+  
+  <article class="task" id="r-p1" data-read="p1" data-title="Part 1 · DeepSeek’s impact on AI" data-ref="R1-P1">
+    <div class="task-head"><span class="tno">READING R1-P1</span><span class="ttl">Part 1 · DeepSeek’s impact on AI</span><span class="time">—</span></div>
+    <div class="task-body">
+      <p class="srcline"><span class="badge now">Week 0</span>Chris Lattner · 30 January 2025 · <a href="https://www.modular.com/blog/democratizing-compute-part-1-deepseeks-impact-on-ai">Original article</a></p>
+      <h4>1. Main idea</h4>
+      <p>DeepSeek showed that new ideas and better use of existing hardware can reduce the need for costly GPUs. Lattner says AI demand will still grow. Thus the cost of AI compute must go down. This part starts the series and gives its questions.</p>
+      <h4>2. Key points</h4>
+      <ol class="kp"><li>The belief under test: only companies with huge compute can lead in AI. DeepSeek’s results weaken this belief. A small, focused team challenged large companies.</li><li>Lattner expects a surge in demand for AI applications. If hardware access and software do not improve, progress stops at hardware shortages or at poor tools.</li><li>He names three ways to reduce the total cost of ownership (TCO). They are: wider access to other hardware, more efficiency from current systems and faster software.</li><li>He gives his background, because it explains his view. He founded LLVM. At Apple he worked on OpenCL, moved the CPU and GPU software to LLVM, and helped create Swift.</li><li>In 2017 he joined Google to lead software for the TPU. The hardware was ready, but the software was not. TPUs worked only in part with PyTorch.</li><li>His diagnosis: customers were not able to run any model they wanted on TPUs. The missing piece was CUDA, which is the de facto standard for AI development.</li><li>Since then he has worked on MLIR, which many AI compilers now use. His team at Modular worked for about three years on a project that it did not yet show.</li><li>Money and motivation are not the cause of the problem. Lattner says the problems are foundational. He tells the reader to look at the roots under product news.</li></ol>
+      
+      
+      
+      <h4>3. Terms</h4>
+      <table><thead><tr><th>Term</th><th>Meaning in this source</th></tr></thead><tbody><tr><td>DeepSeek</td><td>The AI group whose efficiency results start the article.</td></tr><tr><td>TCO</td><td>Total cost of ownership. The full cost of AI compute. Lattner wants to reduce it.</td></tr><tr><td>Hardware utilization</td><td>How much of the hardware’s capacity the software uses.</td></tr><tr><td>TPU</td><td>Tensor Processing Unit. The AI accelerator of Google.</td></tr><tr><td>CUDA</td><td>The NVIDIA platform for GPU programming. Lattner calls it the de facto standard for AI.</td></tr><tr><td>LLVM</td><td>The compiler infrastructure that Lattner founded. C++, Rust and Swift use it.</td></tr><tr><td>MLIR</td><td>A compiler framework that Lattner’s team made at Google. Many AI compilers use it.</td></tr></tbody></table>
+      <h4>4. Numbers and dates to remember</h4>
+      <table><thead><tr><th>Item</th><th>Meaning</th></tr></thead><tbody><tr><td>30 Jan 2025</td><td>Publication date.</td></tr><tr><td>25 years</td><td>The length of Lattner’s work on computing power, as he says.</td></tr><tr><td>2017</td><td>He joins Google to lead TPU software.</td></tr><tr><td>About 2.5 years</td><td>The time to launch and scale TPUs on Google Cloud.</td></tr><tr><td>ExaFLOPS</td><td>The scale that the TPU systems reached.</td></tr></tbody></table>
+      <h4>5. Link to your program</h4>
+      <p>This part gives the motive of Modular: lower cost through better use of hardware and software that works on more than one vendor’s hardware. Expect Lattner to repeat this in the sessions.</p>
+      <h4>6. Self-test</h4>
+      <details class="q"><summary><span class="qn">Q1</span>What three ways does Lattner give to reduce the cost of AI compute?</summary><div class="a">Wider access to alternative hardware, more efficiency from current systems, and faster software innovation.</div></details><details class="q"><summary><span class="qn">Q2</span>Why did TPUs have difficulty at Google, in the view of Lattner?</summary><div class="a">The software was not ready. TPUs worked only in part with PyTorch, and customers were not able to run any model. CUDA was the missing piece.</div></details><details class="q"><summary><span class="qn">Q3</span>List four of the six questions of the series.</summary><div class="a">What is CUDA? Why did it succeed? Is it good? Why do other hardware makers struggle? Why have Triton, oneAPI and OpenCL not solved it? How can the industry move on?</div></details>
+    </div>
+  </article>
+
+  <article class="task" id="r-p2" data-read="p2" data-title="Part 2 · What exactly is “CUDA”?" data-ref="R1-P2">
+    <div class="task-head"><span class="tno">READING R1-P2</span><span class="ttl">Part 2 · What exactly is “CUDA”?</span><span class="time">—</span></div>
+    <div class="task-body">
+      <p class="srcline"><span class="badge now">Week 0</span>Chris Lattner · 5 February 2025 · <a href="https://www.modular.com/blog/democratizing-compute-part-2-what-exactly-is-cuda">Original article</a></p>
+      <h4>1. Main idea</h4>
+      <p>CUDA is not one thing. It is a layered platform of a language, a driver, libraries and complete solutions. Lattner proposes the name “the CUDA Platform”. You must know the whole platform before you plan a way out of the lock-in to NVIDIA.</p>
+      <h4>2. Key points</h4>
+      <ol class="kp"><li>People have partial views. To some, CUDA is a language. To others, it is a framework or “the thing that makes NVIDIA GPUs fast”. None of these views is complete.</li><li>The history: early GPUs were fixed-function. Rendering steps were hardwired. In 2001, the GeForce3 added programmable shaders. Then researchers used GPUs for work that is not graphics. The BrookGPU project at Stanford was a precursor.</li><li>Layer 1 is the programming model (launched in 2006). The CUDA language is derived from C++. It shows GPU threads and memory to the programmer. You write kernels in it. Kernels compile to PTX.</li><li>The NVIDIA driver is the bridge from CPU to GPU. It allocates memory, copies data and launches kernels. The article shows a vector-addition kernel with 256 threads in each block.</li><li>This level is low and easy to get wrong. Crashes are hard to diagnose. Some details, for example the warp size, only apply to NVIDIA. AlexNet (2012) used custom kernels of this type.</li><li>Layer 2 is the libraries. Raw CUDA is hard to use and is not performance portable. A kernel for one GPU generation can run far below peak on the next generation.</li><li>NVIDIA built closed-source libraries: cuDNN (2014), cuBLAS and cuFFT. NVIDIA pays the cost to rewrite them for each generation. cuDNN let TensorFlow (2015) and PyTorch (2016) scale.</li><li>Layer 3 is complete solutions for AI engineers who do not write GPU code: Triton Serving, TensorRT and TensorRT-LLM.</li><li>Together, these layers form a brand and an ecosystem, as the Java ecosystem or an operating system does. The four traits: a huge code base, many tools and libraries, tuning for each new architecture, and closed internals.</li><li>Lattner concludes that CUDA won through strategy, ecosystem and momentum more than through raw performance.</li></ol>
+      
+      <div class="caution"><div class="wh">CAUTION</div><p>The word “Triton” has two meanings in the series. In Part 2, “Triton Serving” is an NVIDIA product that serves models. In Part 7, “Triton” is the OpenAI language for GPU kernels. They are different things.</p></div>
+      
+      <h4>3. Terms</h4>
+      <table><thead><tr><th>Term</th><th>Meaning in this source</th></tr></thead><tbody><tr><td>CUDA language</td><td>A C++-derived language to write GPU kernels. It shows threads and memory.</td></tr><tr><td>Kernel</td><td>A function that runs on the GPU. Many copies run at the same time.</td></tr><tr><td>NVIDIA driver</td><td>The software that connects the CPU to the GPU. It handles memory and kernel launches.</td></tr><tr><td>PTX</td><td>An assembly-like language. It is the lowest supported interface to NVIDIA GPUs. CUDA code compiles to it.</td></tr><tr><td>Warp</td><td>A group of GPU threads that the hardware runs together. The size depends on the hardware.</td></tr><tr><td>cuDNN</td><td>NVIDIA library of deep-learning building blocks, for example convolution.</td></tr><tr><td>cuBLAS</td><td>NVIDIA library of fast linear-algebra routines.</td></tr><tr><td>Performance portability</td><td>Code that runs well on new hardware without a rewrite. CUDA kernels do not have this.</td></tr><tr><td>TensorRT</td><td>NVIDIA tool that optimizes a trained model for inference on NVIDIA GPUs.</td></tr></tbody></table>
+      <h4>4. Numbers and dates to remember</h4>
+      <table><thead><tr><th>Item</th><th>Meaning</th></tr></thead><tbody><tr><td>2001</td><td>GeForce3. The first GPU with programmable shaders.</td></tr><tr><td>2006</td><td>CUDA is launched.</td></tr><tr><td>2012</td><td>AlexNet. Custom CUDA kernels.</td></tr><tr><td>2014 · 2015 · 2016</td><td>cuDNN · TensorFlow · PyTorch.</td></tr></tbody></table>
+      <h4>5. Link to your program</h4>
+      <p>Weeks 10 and 11 teach GPU kernels in Mojo. Mojo’s kernel layer replaces layer 1 of this article. Also, the LLVM NVPTX back end (Week 1, Figure 1) makes the PTX of this article.</p>
+      <h4>6. Self-test</h4>
+      <details class="q"><summary><span class="qn">Q1</span>Name the three layers of the CUDA Platform.</summary><div class="a">The programming model (language and driver), the high-level libraries, and the complete solutions for AI engineers.</div></details><details class="q"><summary><span class="qn">Q2</span>Why does the lack of performance portability matter?</summary><div class="a">A kernel for one GPU generation can run far below peak on the next generation. Each generation needs a rewrite.</div></details><details class="q"><summary><span class="qn">Q3</span>What are the two meanings of “Triton” in the series?</summary><div class="a">NVIDIA’s Triton Serving (Part 2) is a model-serving product. The Triton of Part 7 is the OpenAI Python language for GPU kernels.</div></details>
+    </div>
+  </article>
+
+  <article class="task" id="r-p3" data-read="p3" data-title="Part 3 · How did CUDA succeed?" data-ref="R1-P3">
+    <div class="task-head"><span class="tno">READING R1-P3</span><span class="ttl">Part 3 · How did CUDA succeed?</span><span class="time">—</span></div>
+    <div class="task-body">
+      <p class="srcline"><span class="badge now">Week 0</span>Chris Lattner · 12 February 2025 · <a href="https://www.modular.com/blog/democratizing-ai-compute-part-3-how-did-cuda-succeed">Original article</a></p>
+      <h4>1. Main idea</h4>
+      <p>CUDA won through long-term strategy as much as through quality. NVIDIA kept one compatible GPU line, built the libraries that AI frameworks needed, and arrived at the right time. These forces now reinforce each other. Lattner says they also begin to limit progress.</p>
+      <h4>2. Key points</h4>
+      <ol class="kp"><li>Alternatives exist: ROCm from AMD, oneAPI from Intel and SYCL frameworks. None has displaced CUDA. Lattner gives these causes: execution, investment, continuity, lock-in and some luck.</li><li>Early growth. A new platform needs developers, and developers avoid niche hardware. NVIDIA kept its GPUs compatible across generations. Jensen Huang explains this on the Acquired podcast.</li><li>Developers learned CUDA on cheap gaming GPUs and later moved to expensive datacenter GPUs. NVIDIA made one contiguous line. It accepted some inefficiency for one ecosystem. Lattner compares this to the iPhone line of Apple.</li><li>The AI wave. AlexNet (2012) trained on two GeForce GTX 580 GPUs. Then TensorFlow (2015) and PyTorch (2016) arrived. NVIDIA invested in cuDNN and TensorRT so that these frameworks ran best on NVIDIA GPUs.</li><li>Framework teams did not have to tune at a low level. NVIDIA did it for them. Each new hardware generation came with a new CUDA version. This tied the frameworks to NVIDIA hardware.</li><li>Why did Google and Meta allow this? They used AI for products and research. They also built their own chips, the TPU and an in-house accelerator, so they focused on those.</li><li>Rivals faced a hard task. They had to copy the libraries and also chase each new NVIDIA advance. Efforts such as XLA and PyTorch 2 came partly from this struggle.</li><li>The GenAI surge. ChatGPT launched in late 2022. Companies spent billions on infrastructure, and much of it went to NVIDIA. Training and serving are costly, so small efficiency gains save large sums.</li><li>Companies had to optimize for CUDA or fall behind. FlashAttention-3 was built only for Hopper GPUs. DeepSeek wrote PTX directly. Lattner expects another round of rewrites for Blackwell.</li><li>The cycle has four steps. GenAI creates demand. NVIDIA controls the supply. The largest install base attracts the most research, and this research justifies more investment.</li><li>Lattner ends with a warning. The same forces that protect CUDA also limit technical progress. He asks if CUDA is good for developers or only for NVIDIA.</li></ol>
+      
+      
+      
+      <h4>3. Terms</h4>
+      <table><thead><tr><th>Term</th><th>Meaning in this source</th></tr></thead><tbody><tr><td>Install base</td><td>The number of devices that run a platform. CUDA has the largest.</td></tr><tr><td>Network effect</td><td>More users make more software, and more software attracts more users.</td></tr><tr><td>Lock-in</td><td>The cost of change is so high that users stay with one vendor.</td></tr><tr><td>Hardware/software co-design</td><td>Design of hardware and software together, so each fits the other.</td></tr><tr><td>CapEx</td><td>Capital expenditure. Spending on long-life assets, for example datacenters.</td></tr><tr><td>FlashAttention-3</td><td>A fast attention kernel. It was built only for Hopper GPUs.</td></tr><tr><td>Hopper · Blackwell</td><td>Two NVIDIA GPU architectures. Blackwell is the newer one.</td></tr><tr><td>HBM · SRAM</td><td>HBM is large off-chip GPU memory. SRAM is small and fast, on the chip.</td></tr><tr><td>ROCm · oneAPI · SYCL</td><td>Alternative GPU platforms from AMD and Intel, and a C++ standard.</td></tr></tbody></table>
+      <h4>4. Numbers and dates to remember</h4>
+      <table><thead><tr><th>Item</th><th>Meaning</th></tr></thead><tbody><tr><td>2012</td><td>AlexNet, trained on two GeForce GTX 580 GPUs.</td></tr><tr><td>2015 · 2016</td><td>TensorFlow (Google) · PyTorch (Meta).</td></tr><tr><td>Late 2022</td><td>ChatGPT launches.</td></tr></tbody></table>
+      <h4>5. Link to your program</h4>
+      <p>Part 3 explains why a portable stack must also be fast on NVIDIA hardware. Modular claims this in Part 11. Check this claim in the sessions.</p>
+      <h4>6. Self-test</h4>
+      <details class="q"><summary><span class="qn">Q1</span>Why did compatibility between GPU generations help CUDA?</summary><div class="a">Developers learned on cheap GPUs and move to datacenter GPUs. This gave a large base of users and a network effect.</div></details><details class="q"><summary><span class="qn">Q2</span>Why did Google and Meta let NVIDIA write the low-level libraries?</summary><div class="a">They focused on using AI and on their own chips. Giving the GPU libraries to NVIDIA made sense for them.</div></details><details class="q"><summary><span class="qn">Q3</span>Describe the reinforcing cycle of CUDA.</summary><div class="a">GenAI demand rises. NVIDIA controls the supply. The largest install base attracts most research. This research justifies more investment in CUDA.</div></details>
+    </div>
+  </article>
+
+  <article class="task" id="r-p4" data-read="p4" data-title="Part 4 · CUDA is the incumbent, but is it any good?" data-ref="R1-P4">
+    <div class="task-head"><span class="tno">READING R1-P4</span><span class="ttl">Part 4 · CUDA is the incumbent, but is it any good?</span><span class="time">—</span></div>
+    <div class="task-body">
+      <p class="srcline"><span class="badge now">Week 0</span>Chris Lattner · 20 February 2025 · <a href="https://www.modular.com/blog/democratizing-ai-compute-part-4-cuda-is-the-incumbent-but-is-it-any-good">Original article</a></p>
+      <h4>1. Main idea</h4>
+      <p>The answer depends on the person who asks. CUDA is essential but painful for AI engineers and for performance engineers. It is a barrier for people who want portable software. It also slows NVIDIA itself.</p>
+      <h4>2. Key points</h4>
+      <ol class="kp"><li>AI engineers. They gain from the maturity of CUDA and from the many libraries built for it first. Their main pain is version management. The toolkit, the driver and the framework must match.</li><li>Lattner gives an example of a mismatch between CUDA 11.7 and CUDA 12.1. He also mentions driver problems after an upgrade. NVIDIA answers with point solutions such as NIM, which raise lock-in.</li><li>Performance engineers. CUDA dates from 2007, before deep learning. It does not show all that modern GPUs can do, for example Tensor Cores and sparsity.</li><li>FlashAttention-3 and DeepSeek go below CUDA to PTX. PTX is only in part documented. It changes between generations and is hard to use.</li><li>Tensor Cores give most of the FLOPs of a model, but they are hard to program. Programmers use trial and error. The libraries cuBLAS and CUTLASS help. The documents lag behind each new GPU.</li><li>AI work is in Python, but CUDA is C++. The change of language slows work. C++ templates cause slow compiles and error messages that are hard to read.</li><li>Portable software. CUDA runs only on NVIDIA hardware. Early OpenCL back ends in TensorFlow and PyTorch lagged behind in speed and features. Developers target CUDA first, which makes CUDA stronger.</li><li>NVIDIA itself. The CUDA moat gave NVIDIA about 98 percent of the datacenter GPU market by 2023. Jim Keller disagrees and says CUDA is a swamp, not a moat. He compares it to x86 and Intel.</li><li>Jensen Huang says NVIDIA has more software engineers than hardware engineers. Usability problems force NVIDIA to hire many people. The size of the stack also slows new hardware launches.</li><li>Backward compatibility has become technical debt. This is the innovator’s dilemma. Blackwell broke compatibility with some Hopper PTX operations. Code written at the PTX level can need a rewrite.</li></ol>
+      
+      
+      
+      <h4>3. Terms</h4>
+      <table><thead><tr><th>Term</th><th>Meaning in this source</th></tr></thead><tbody><tr><td>CUDA moat</td><td>The advantage that the CUDA ecosystem and lock-in give to NVIDIA.</td></tr><tr><td>Tensor Core</td><td>A special unit in the GPU that does small matrix multiplications at high speed.</td></tr><tr><td>CUDA core</td><td>A general-purpose GPU core. It is less important for AI today.</td></tr><tr><td>Sparsity</td><td>GPU support to skip zero values in data, to save time.</td></tr><tr><td>CUTLASS</td><td>A C++ template library from NVIDIA for matrix operations.</td></tr><tr><td>NIM</td><td>NVIDIA Inference Microservices. Containers for easy model deployment.</td></tr><tr><td>Technical debt</td><td>Old design choices that make new work harder.</td></tr><tr><td>Innovator’s dilemma</td><td>A leader cannot change because the old success depends on the old design.</td></tr></tbody></table>
+      <h4>4. Numbers and dates to remember</h4>
+      <table><thead><tr><th>Item</th><th>Meaning</th></tr></thead><tbody><tr><td>2007</td><td>The year of CUDA in this article. Part 2 gives 2006 for the launch.</td></tr><tr><td>About 98%</td><td>NVIDIA share of the datacenter GPU market in 2023.</td></tr><tr><td>CUDA 11.7 · 12.1</td><td>The versions in the mismatch example.</td></tr></tbody></table>
+      <h4>5. Link to your program</h4>
+      <p>The practice in Weeks 10 and 11 (Mojo GPU Puzzles) shows how a different stack gives access to Tensor Cores. Part 11 says that Mojo can use Tensor Cores and TMAs.</p>
+      <h4>6. Self-test</h4>
+      <details class="q"><summary><span class="qn">Q1</span>Give the four viewpoints that the article uses.</summary><div class="a">AI engineers who build on CUDA, performance engineers who write GPU code, people who need portable software, and NVIDIA itself.</div></details><details class="q"><summary><span class="qn">Q2</span>Why are Tensor Cores hard to use?</summary><div class="a">They give most of the FLOPs, but programming them needs obscure knowledge and trial and error. The documents lag behind the hardware.</div></details><details class="q"><summary><span class="qn">Q3</span>What did Jim Keller mean? What does Lattner add?</summary><div class="a">Keller says CUDA is a swamp, not a moat. Lattner adds that old compatibility becomes technical debt, and Blackwell broke some Hopper PTX.</div></details>
+    </div>
+  </article>
+</section>
+
+<!-- ============================================================ 40 -->
+<section class="chapter" id="c-40" data-section="40-00-00 · Parts 5 to 8 · Alternatives">
+  <header><span class="num">40-00-00</span><span class="wk">R1 · Parts 5 to 8</span></header>
+  <h2>Parts 5 to 8 · Four attempts to replace CUDA</h2>
+  <p>Part 8 (MLIR) is required for Week 0. Read Parts 5, 6 and 7 before the sessions. They give the yardstick that Part 8 uses.</p>
+  
+  <article class="task" id="r-p5" data-read="p5" data-title="Part 5 · What about OpenCL and CUDA C++ alternatives?" data-ref="R1-P5">
+    <div class="task-head"><span class="tno">READING R1-P5</span><span class="ttl">Part 5 · What about OpenCL and CUDA C++ alternatives?</span><span class="time">—</span></div>
+    <div class="task-body">
+      <p class="srcline"><span class="badge later">Before the sessions</span>Chris Lattner · 5 March 2025 · <a href="https://www.modular.com/blog/democratizing-ai-compute-part-5-what-about-cuda-c-alternatives">Original article</a></p>
+      <h4>1. Main idea</h4>
+      <p>C++-based portable GPU models (OpenCL, SYCL, oneAPI) did not become important for AI. Lattner gives these causes: competitors who must also cooperate, slow committees, fragmentation and the strategy of NVIDIA. He ends with seven requirements for a successful unifier.</p>
+      <h4>2. Key points</h4>
+      <ol class="kp"><li>OpenCL was a C++-like way to write GPU code. In 2008, Lattner was a lead engineer on it at Apple. It was the first production use of the Clang compiler. Apple gave it to the Khronos Group.</li><li>OpenCL was widely used in mobile and embedded devices. It still runs on Android and on DSPs. It inspired SYCL, Vulkan, SPIR-V, oneAPI and WebCL. But it did not become the platform for AI.</li><li>“Coopetition at committee speed”. Hardware vendors cooperate on a standard and compete on hardware. They keep new features until their products ship. Then they add vendor extensions.</li><li>Apple wanted speed and secrecy. It left OpenCL for Metal. It never brought OpenCL to iOS and later deprecated it on macOS.</li><li>Technical problems. Apple gave a specification, not a full shared implementation. Each vendor made its own fork. Conformance tests were weak. Portability suffered.</li><li>AI needed more. TensorFlow and PyTorch needed high-level libraries for matrix multiplication, FlashAttention and scale. OpenCL had no standard support for Tensor Cores.</li><li>Lattner says OpenCL can be 5 to 10 times slower than CUDA or vendor-native code. For GenAI, where compute is costly, this is a deal-breaker.</li><li>NVIDIA worked with the frameworks on its own libraries. It kept a limited OpenCL implementation, with no Tensor Core access. CUDA stayed the main path.</li><li>Lattner is also doubtful about oneAPI, now the UXL Foundation. It is open in name, but one hardware vendor controls it.</li><li>The article ends with a link to AI compilers. Hand-written code cannot keep pace with the number of chips and workloads. This led compiler engineers, including Lattner, into AI.</li></ol>
+      <div class="lst"><div class="lh">The seven requirements for a successful unifier</div><ol class="kp"><li>A reference implementation, not only a specification and tests.</li><li>Strong leadership and vision from the owner of that implementation.</li><li>Top performance on the hardware of the industry leader.</li><li>Fast evolution, to keep pace with AI research and hardware.</li><li>Developer appeal: usability, tools and fast compile times. “C++ like” does not help in AI.</li><li>An open community, because adoption decides success.</li><li>No fragmentation into incompatible forks.</li></ol></div>
+      
+      
+      <h4>3. Terms</h4>
+      <table><thead><tr><th>Term</th><th>Meaning in this source</th></tr></thead><tbody><tr><td>OpenCL</td><td>An open standard for portable GPU and accelerator programming.</td></tr><tr><td>SYCL</td><td>A C++ standard that came after OpenCL.</td></tr><tr><td>oneAPI · UXL</td><td>The Intel effort for portable compute. UXL Foundation is its new name.</td></tr><tr><td>Khronos Group</td><td>The standards group that owns OpenCL and Vulkan.</td></tr><tr><td>Metal</td><td>The graphics and compute platform of Apple.</td></tr><tr><td>SPIR-V</td><td>A standard intermediate representation for GPU programs.</td></tr><tr><td>Coopetition</td><td>Competitors who cooperate in a standard and compete in business.</td></tr><tr><td>Reference implementation</td><td>One working shared code base that defines the standard.</td></tr><tr><td>Conformance test</td><td>A test that checks if an implementation follows the standard.</td></tr><tr><td>Fork</td><td>A separate copy of code that a vendor changes on its own.</td></tr></tbody></table>
+      <h4>4. Numbers and dates to remember</h4>
+      <table><thead><tr><th>Item</th><th>Meaning</th></tr></thead><tbody><tr><td>2008</td><td>Apple builds OpenCL. Lattner is a lead engineer.</td></tr><tr><td>5× to 10×</td><td>How much slower OpenCL can be than CUDA, as Lattner says.</td></tr></tbody></table>
+      <h4>5. Link to your program</h4>
+      <p>The seven requirements are the yardstick for the rest of the series. Part 6, Part 7, Part 8 and Part 11 score projects against them. See the scorecard in Chapter 10-00.</p>
+      <h4>6. Self-test</h4>
+      <details class="q"><summary><span class="qn">Q1</span>Give five of the seven requirements for a successful unifier.</summary><div class="a">A reference implementation, strong leadership, top performance on the leader’s hardware, fast evolution, developer appeal, an open community, and no fragmentation.</div></details><details class="q"><summary><span class="qn">Q2</span>Why did Apple leave OpenCL?</summary><div class="a">The committee was too slow. Apple wanted fast iteration, secrecy for product launches and room to differ. It made Metal.</div></details><details class="q"><summary><span class="qn">Q3</span>Why does a specification without a shared implementation hurt?</summary><div class="a">Each vendor builds and maintains its own fork. The result is a set of forks and extensions that are not portable.</div></details>
+    </div>
+  </article>
+
+  <article class="task" id="r-p6" data-read="p6" data-title="Part 6 · What about TVM, XLA, and AI compilers?" data-ref="R1-P6">
+    <div class="task-head"><span class="tno">READING R1-P6</span><span class="ttl">Part 6 · What about TVM, XLA, and AI compilers?</span><span class="time">—</span></div>
+    <div class="task-body">
+      <p class="srcline"><span class="badge later">Before the sessions</span>Chris Lattner · 12 March 2025 · <a href="https://www.modular.com/blog/democratizing-ai-compute-part-6-what-about-ai-compilers">Original article</a></p>
+      <h4>1. Main idea</h4>
+      <p>AI compilers answer one problem: nobody can hand-write GPU kernels for every operator and every chip. TVM and XLA were the first main attempts. They did not reach their goal. The causes were performance, fragmentation, incentives and the arrival of GenAI.</p>
+      <h4>2. Key points</h4>
+      <ol class="kp"><li>At first, engineers wrote CUDA kernels by hand. NVIDIA packed common kernels in libraries such as cuDNN. Then models grew, and the number of operators in the frameworks grew to thousands.</li><li>An AI compiler takes high-level operations from a framework and makes efficient GPU code. Its main technique is kernel fusion. See Figure 2.</li><li>The example is a matrix multiplication followed by a ReLU. Without fusion, the product goes to global memory and then back for the ReLU. Memory traffic dominates the run time.</li><li>With fusion, the ReLU runs inside the multiplication loop. The intermediate result stays on the chip. Lattner reports gains of up to about 2 times, which depend on hardware and size.</li><li>The problem grows fast. Hundreds of operations combine with hundreds of others. New data types, for example float8, add more cases. More types of hardware add more again. Fixed libraries cannot keep up.</li><li>TVM (Tensor Virtual Machine). It began in about 2016 at the University of Washington, with Tianqi Chen and Luis Ceze. It became an Apache project. ARM, Qualcomm, Facebook and Intel contributed.</li><li>Three lessons from TVM. It was late to support Tensor Cores. Vendors made forks, which caused fragmentation. It was built for simple “TradAI” operators, so it fell behind on GenAI, and auto-tuning made compiles slow.</li><li>NVIDIA bought OctoAI in late 2024. The core developers of TVM founded OctoAI. Thus the future of TVM is not clear.</li><li>XLA. Google built it for the TPU. Lattner joined Google Brain in 2017 to scale TPUs and XLA. XLA became OpenXLA. It scales models across thousands of chips with clean partitioning.</li><li>Lattner gives four reasons why PyTorch and vLLM did not adopt XLA on GPUs. Two projects share one name. The incentives favor the TPU. Google keeps control of governance. The fixed operator set limits GenAI.</li><li>The two projects are the closed XLA-TPU compiler and the public OpenXLA. They share only some code (StableHLO). On GPUs, XLA usually calls the standard CUDA libraries. Even on TPUs, critical work now uses Pallas, which bypasses XLA.</li><li>Lattner scores TVM and XLA with the lessons of Part 5. Both have working code and a community. Neither gave full speed on NVIDIA GPUs without CUDA libraries. Both fragmented. Neither was ready for GenAI.</li><li>The generations. First generation (TensorFlow, PyTorch 1.0): hand-written kernels. Second generation (TVM, XLA): automatic, but with less control, less extensibility and less dynamic behavior.</li><li>His wish list for the next generation: full programmability, leverage over complexity, and support for large-scale applications on many accelerators.</li></ol>
+      
+      
+      
+      <h4>3. Terms</h4>
+      <table><thead><tr><th>Term</th><th>Meaning in this source</th></tr></thead><tbody><tr><td>AI compiler</td><td>A system that turns framework operations into efficient code for GPUs and other chips.</td></tr><tr><td>Kernel fusion</td><td>Joining several operations in one kernel, to avoid writes of intermediate results to memory.</td></tr><tr><td>Matmul · ReLU</td><td>Matrix multiplication. A common activation function that sets negative values to zero.</td></tr><tr><td>Global memory</td><td>Large, slow, off-chip GPU memory.</td></tr><tr><td>Shared memory · registers</td><td>Small, fast, on-chip storage where fused data stays.</td></tr><tr><td>Auto-tuning</td><td>An automatic search for the best kernel settings. It can take a long time.</td></tr><tr><td>TradAI</td><td>The word of Lattner for traditional AI with simple operators.</td></tr><tr><td>StableHLO</td><td>The shared operator set between XLA-TPU and OpenXLA.</td></tr><tr><td>Pallas</td><td>A Google system to write custom kernels. It bypasses XLA.</td></tr><tr><td>JAX</td><td>A Google framework for numerical computing. XLA’s clean model helped it grow.</td></tr></tbody></table>
+      <h4>4. Numbers and dates to remember</h4>
+      <table><thead><tr><th>Item</th><th>Meaning</th></tr></thead><tbody><tr><td>About 2016 · 2018</td><td>TVM starts · the TVM paper.</td></tr><tr><td>2017</td><td>Lattner joins Google Brain.</td></tr><tr><td>March 2023</td><td>XLA is renamed OpenXLA.</td></tr><tr><td>Late 2024</td><td>NVIDIA acquires OctoAI.</td></tr><tr><td>Up to about 2×</td><td>The gain that fusion can give.</td></tr></tbody></table>
+      <h4>5. Link to your program</h4>
+      <p>Weeks 4 to 6 teach the lowering and the passes that make fusion possible. Week 12 uses the MAX graph compiler. Ask this in the sessions: where does MAX decide on fusion?</p>
+      <h4>6. Self-test</h4>
+      <details class="q"><summary><span class="qn">Q1</span>What is kernel fusion? Why does it help?</summary><div class="a">It joins operations in one kernel. The intermediate result does not go to global memory, so there is less memory traffic, less allocation and more speed.</div></details><details class="q"><summary><span class="qn">Q2</span>Give the three lessons that Lattner draws from TVM.</summary><div class="a">It was late to support Tensor Cores. Vendor forks fragmented it. It lacked agility for GenAI, and auto-tuning made compiles slow.</div></details><details class="q"><summary><span class="qn">Q3</span>Give the four reasons why XLA is not used on GPUs by PyTorch and vLLM.</summary><div class="a">Two projects share one name. The incentives favor TPUs. Google controls the governance. The fixed operator set is too limited for GenAI.</div></details>
+    </div>
+  </article>
+
+  <article class="task" id="r-p7" data-read="p7" data-title="Part 7 · What about Triton and Python eDSLs?" data-ref="R1-P7">
+    <div class="task-head"><span class="tno">READING R1-P7</span><span class="ttl">Part 7 · What about Triton and Python eDSLs?</span><span class="time">—</span></div>
+    <div class="task-body">
+      <p class="srcline"><span class="badge later">Before the sessions</span>Chris Lattner · 26 March 2025 · <a href="https://www.modular.com/blog/democratizing-ai-compute-part-7-what-about-triton-and-python-edsls">Original article</a></p>
+      <h4>1. Main idea</h4>
+      <p>Python eDSLs try to give CUDA-level control with the ease of Python. They have costs in performance, portability, tools and governance. Triton is the best-known example. It is useful, but it does not challenge CUDA. Lattner expects more fragmentation.</p>
+      <h4>2. Key points</h4>
+      <ol class="kp"><li>The tension: compilers hide the hardware to be easy to use. GenAI needs hardware control for speed. CUDA C++ gives control, but AI work is in Python, and Python does not run on a GPU.</li><li>An embedded domain-specific language (eDSL) reuses the syntax of a host language, here Python. It changes how the code runs. PySpark, tf.function and torch.fx are examples.</li><li>Most eDSLs use a Python decorator. In Triton, <code>@triton.jit</code> intercepts the function. Triton parses it to an abstract syntax tree (AST), analyzes it and makes GPU code.</li><li>The advantages. The authors do not need a new language, parser or toolchain. Users keep their IDE, debugger, pip and conda.</li><li>Challenge 1: the code looks like Python, but it is not Python. In a Numba example, a generator expression and the built-in sum fail. The failures can be silent or hard to understand.</li><li>Challenge 2: errors and tools. Users get compiler stack traces. Python debuggers often fail. The code cannot use all Python libraries.</li><li>Challenge 3: limited expressiveness. An eDSL cannot add new keywords or constructs, as CUDA C++ can.</li><li>Triton began as research by Philippe Tillet at Harvard (published in 2019). It grew when he joined OpenAI and when PyTorch 2 adopted it.</li><li>Triton’s model is block-centric. You program blocks, not single threads. Functions such as <code>tl.program_id</code>, <code>tl.arange</code>, masked <code>tl.load</code> and <code>tl.dot</code> do the work. <code>tl.dot</code> reaches the Tensor Cores.</li><li>Triton also automates vectorization. It makes double buffering and software pipelining easier for non-experts.</li><li>Where Triton falls short. Speed: about 20 percent behind CUDA on the H100. Lattner says this can mean a $1B cloud bill instead of $800M at scale.</li><li>Governance: OpenAI owns the roadmap. Tools: no Nsight Compute support. Portability: A100 kernels often run badly on the H100. AMD support lags. TPUs, Groq and Cerebras do not fit the SIMT model.</li><li>Other eDSLs. Pallas (JAX, mainly TPU). CUTLASS Python (announced at GTC 2025, for Blackwell first). cuTile (a tile-based NVIDIA eDSL; NVIDIA reportedly said it is about 15 percent slower than TRT-LLM).</li><li>Lattner sees many tools as fragmentation. He ends with MLIR, which enabled Triton and cuTile. He says MLIR has the same governance problems. Part 8 covers it.</li></ol>
+      
+      
+      
+      <h4>3. Terms</h4>
+      <table><thead><tr><th>Term</th><th>Meaning in this source</th></tr></thead><tbody><tr><td>DSL · eDSL</td><td>A language for one domain, for example SQL. An eDSL is hosted in another language.</td></tr><tr><td>Decorator</td><td>A Python feature that passes a function to other code before it runs.</td></tr><tr><td>AST</td><td>Abstract syntax tree. A tree that shows the structure of code.</td></tr><tr><td>Block</td><td>The group of threads that a GPU schedules together. Triton programs at this level.</td></tr><tr><td>SIMT</td><td>Single instruction, multiple threads. The GPU execution model.</td></tr><tr><td>Double buffering · software pipelining</td><td>Methods to overlap data movement with computation.</td></tr><tr><td>Nsight Compute</td><td>The NVIDIA profiler. Triton does not work with it.</td></tr><tr><td>TMA · FP8</td><td>A Hopper hardware feature for data movement. An 8-bit floating-point format.</td></tr><tr><td>TRT-LLM</td><td>TensorRT-LLM. The NVIDIA library for LLM inference.</td></tr></tbody></table>
+      <h4>4. Numbers and dates to remember</h4>
+      <table><thead><tr><th>Item</th><th>Meaning</th></tr></thead><tbody><tr><td>2019</td><td>Triton research paper.</td></tr><tr><td>About 20%</td><td>Gap to CUDA on the H100.</td></tr><tr><td>$1B vs $800M</td><td>The cloud-bill example that Lattner gives.</td></tr><tr><td>About 15%</td><td>The gap that NVIDIA reportedly gave for cuTile.</td></tr></tbody></table>
+      <h4>5. Link to your program</h4>
+      <p>Week 8 covers Mojo parameters and SIMD. A good question for the sessions: how does Mojo avoid the “looks like Python but is not” problem? Part 11 says Mojo files sit beside Python modules.</p>
+      <h4>6. Self-test</h4>
+      <details class="q"><summary><span class="qn">Q1</span>Explain how an eDSL such as Triton works.</summary><div class="a">A decorator intercepts the Python function. The tool parses it to an AST, analyzes it and generates GPU code.</div></details><details class="q"><summary><span class="qn">Q2</span>Give four weak points of Triton.</summary><div class="a">A speed gap of about 20 percent, OpenAI control of the roadmap, no support for Nsight Compute, and weak portability to other hardware.</div></details><details class="q"><summary><span class="qn">Q3</span>Why does “looks like Python but is not Python” matter?</summary><div class="a">Some Python features fail, sometimes without a clear error. Users also lose the normal debugger and libraries.</div></details>
+    </div>
+  </article>
+
+  <article class="task" id="r-p8" data-read="p8" data-title="Part 8 · What about the MLIR compiler infrastructure?" data-ref="R1-P8">
+    <div class="task-head"><span class="tno">READING R1-P8</span><span class="ttl">Part 8 · What about the MLIR compiler infrastructure?</span><span class="time">—</span></div>
+    <div class="task-body">
+      <p class="srcline"><span class="badge now">Week 0</span>Chris Lattner · 8 April 2025 · <a href="https://www.modular.com/blog/democratizing-ai-compute-part-8-what-about-the-mlir-compiler-infrastructure">Original article</a></p>
+      <h4>1. Main idea</h4>
+      <p>MLIR succeeded as general compiler infrastructure, and most AI stacks use it. It did not give the unified AI platform that its makers hoped for. Lattner gives these causes: early scaling, many dialects, and competition among former colleagues. The lessons are about governance and incentives.</p>
+      <h4>2. Key points</h4>
+      <ol class="kp"><li>In 2018, AI software was fragmented. TensorFlow, PyTorch, JAX, Glow, ONNX, TensorFlow Lite, XLA and TVM each had their own graph system and operations.</li><li>Lattner worked at Google to scale TPUs and other chips. He decided that the industry must not continue to build compiler infrastructure from nothing. His manager, Jeff Dean, told him to build a unifying compiler.</li><li>Models are graphs of operations. These need a strong compiler base, but many frameworks lacked basics such as SSA. Lattner and four colleagues spent days at a whiteboard to find one design for all.</li><li>The key idea is the dialect. A dialect is a set of operations, types and meanings for one domain, on a shared core. This replaces one rigid IR such as LLVM IR. MLIR is “a framework for building many compilers”.</li><li>MLIR began as research at Google Brain. Teams for custom ASICs, mobile AI and TensorFlow Lite used it. Google open-sourced it and gave it to the LLVM Foundation. Open design meetings invited outside work.</li><li>MLIR became the base for OpenXLA, Triton, parts of CUDA, quantum tools and CIRCT for hardware design.</li><li>The “ML” in MLIR was a joke: “everything but Machine Learning”. But the AI community wanted an end-to-end compiler from TensorFlow or PyTorch to many chips. Teams raced to build it. Lattner says nobody won.</li><li>The dialect explosion. Google led the work on dialects such as arith, linalg and tensor. Governance was light, so many “possibly useful” changes went in. Some did not suit GenAI. PyTorch and GenAI were not first-class.</li><li>Coopetition came back. Many early MLIR developers, including Lattner, left Google, many for hardware companies. They became competitors who build proprietary stacks on shared dialects. MLIR Core stayed strong, but the AI dialects are contested.</li><li>Governance now improves. MLIR has an Area Team and a charter. The charter splits MLIR Core (domain-independent) from the dialects. Lattner wants to call only the core “MLIR” and give the AI dialects another name, maybe “TensorIR”.</li><li>Lesson 1: do not scale too early. The team got many things fast, not one great thing at each level, and then met Hyrum’s Law. Lesson 2: incentives from employers can outweigh community influence.</li><li>Lesson 3: small teams that share a vision work best. Grow the community only after the project has an identity. Lattner draws this from LLVM, Clang, Swift and MLIR Core.</li><li>Lattner closes with the question of Part 9: why do hardware companies struggle to build AI software? Only NVIDIA solved it, by treating CUDA as a strategy.</li></ol>
+      
+      
+      
+      <h4>3. Terms</h4>
+      <table><thead><tr><th>Term</th><th>Meaning in this source</th></tr></thead><tbody><tr><td>MLIR</td><td>Multi-Level Intermediate Representation. A framework to build compilers with many IR levels.</td></tr><tr><td>Dialect</td><td>A set of operations, types and rules for one domain, built on the MLIR core.</td></tr><tr><td>SSA</td><td>Static single assignment. Each value is defined once. LLVM IR uses it.</td></tr><tr><td>Polyhedral analysis</td><td>A mathematical method to optimize loop nests.</td></tr><tr><td>arith · linalg · tensor</td><td>Early MLIR dialects for arithmetic, linear algebra and tensors.</td></tr><tr><td>LLVM Foundation</td><td>The non-profit that handles the legal side of LLVM and MLIR. It does not set technical design.</td></tr><tr><td>Area Team</td><td>The elected LLVM group that now guides MLIR.</td></tr><tr><td>MLIR Core</td><td>The domain-independent part of MLIR.</td></tr><tr><td>Hyrum’s Law</td><td>Users depend on all visible behavior. Each change breaks someone.</td></tr><tr><td>CIRCT</td><td>An MLIR-based project for hardware design.</td></tr><tr><td>TensorIR</td><td>A name that Lattner proposes for the AI dialects, if they separate from the core.</td></tr></tbody></table>
+      <h4>4. Numbers and dates to remember</h4>
+      <table><thead><tr><th>Item</th><th>Meaning</th></tr></thead><tbody><tr><td>2018</td><td>The year of fragmented AI software, and the start of MLIR.</td></tr><tr><td>15–20%</td><td>The performance that Triton and cuTile leave unused versus CUDA, as the article says.</td></tr></tbody></table>
+      <h4>5. Link to your program</h4>
+      <p>This is the heart of your program. Weeks 4 to 6 teach MLIR core and the dialects. In the sessions, ask which dialects MAX uses from upstream MLIR and which it defines itself.</p>
+      <h4>6. Self-test</h4>
+      <details class="q"><summary><span class="qn">Q1</span>What is a dialect? Why did MLIR use dialects?</summary><div class="a">A dialect is a set of operations, types and rules for one domain, on a shared core. It lets many domains share compiler infrastructure and use many abstraction levels.</div></details><details class="q"><summary><span class="qn">Q2</span>What is the difference between MLIR Core and the AI dialects?</summary><div class="a">Core is domain-independent and is strong. The AI dialects (arith, linalg, tensor and others) are contested and incomplete.</div></details><details class="q"><summary><span class="qn">Q3</span>Give the three lessons of Lattner.</summary><div class="a">Do not scale too early. Employer incentives can outweigh community influence. Small teams with one vision work best.</div></details>
+    </div>
+  </article>
+</section>
+
+<!-- ============================================================ 50 -->
+<section class="chapter" id="c-50" data-section="50-00-00 · Parts 9 to 11 · Modular">
+  <header><span class="num">50-00-00</span><span class="wk">R1 · Parts 9 to 11</span></header>
+  <h2>Parts 9 to 11 · Why it is hard, and the Modular answer</h2>
+  <p>Read these three parts before the sessions. They give the reasons for the stack that the sessions describe.</p>
+  
+  <article class="task" id="r-p9" data-read="p9" data-title="Part 9 · Why do HW companies struggle to build AI software?" data-ref="R1-P9">
+    <div class="task-head"><span class="tno">READING R1-P9</span><span class="ttl">Part 9 · Why do HW companies struggle to build AI software?</span><span class="time">—</span></div>
+    <div class="task-body">
+      <p class="srcline"><span class="badge later">Before the sessions</span>Chris Lattner · 22 April 2025 · <a href="https://www.modular.com/blog/democratizing-ai-compute-part-9-why-do-hw-companies-struggle-to-build-ai-software">Original article</a></p>
+      <h4>1. Main idea</h4>
+      <p>Hardware companies spent more than ten years and billions of dollars on AI chips, but NVIDIA still leads. Lattner says the cause is structural: incentives, divided priorities and a low estimate of the software work. He calls this an “invisible matrix of constraints”.</p>
+      <h4>2. Key points</h4>
+      <ol class="kp"><li>The pattern of the series: ambition, early excitement, then fragmentation. The CUDA moat gets deeper. A chip is not enough. A company needs a platform, and a platform needs long bets that do not always pay.</li><li>Lattner describes his career in hardware and software together. At Intel he optimized launch software for the Pentium MMX. At Apple he built compiler infrastructure for the move to Apple’s own chips.</li><li>At Google he scaled TPU software with the hardware and research teams. At SiFive he led engineering at a hardware company. His lesson: hardware and software teams speak different languages, move at different speeds and measure success differently.</li><li>How hardware companies think. They design for the needs of two years ahead. In the CPU era, an LLVM back end gave a new chip a ready ecosystem. AI has no central compiler or operating system.</li><li>Constraint 1: hardware companies do not see a software ecosystem as a product. Budgets, capex and tapeout dates dominate. The result is a demo-driven culture: a chip, a few kernels, some benchmarks and a keynote.</li><li>Pressure 1: the treadmill of research. Workloads keep changing: Transformers, diffusion, MoEs, agents, new quantization. Each hardware feature adds software work to a large cross product of models, formats and targets.</li><li>Pressure 2: a company competes with an industry, not only with CUDA. The open-source ecosystem optimizes for NVIDIA first. A new chip must beat the existing combination. This is software gravity (Part 3).</li><li>Pressure 3: the software team is always outnumbered. It fights escalations and benchmark requests. Pressure 4: the business chases the whale, a large customer. Teams become consultants and make forks and tech debt.</li><li>The regatta metaphor. Speedboats are startups. Racing yachts are single-chip companies and the largest tech companies, which build their own stacks. Ocean liners are Intel, AMD, Apple and Qualcomm. NVIDIA is the aircraft carrier.</li><li>CUDA translators give compatibility, not speed. Intel’s oneAPI is open but lacks momentum. The article ends with the Matrix spoon scene: the constraints are a perception, and you must challenge the assumptions.</li></ol>
+      
+      
+      
+      <h4>3. Terms</h4>
+      <table><thead><tr><th>Term</th><th>Meaning in this source</th></tr></thead><tbody><tr><td>HW/SW co-design</td><td>Design of hardware and software together.</td></tr><tr><td>Tapeout</td><td>The final handoff of a chip design to manufacture.</td></tr><tr><td>BOM cost</td><td>Bill of materials. The cost of the parts of a chip or system.</td></tr><tr><td>Demo-driven culture</td><td>Focus on launch demos and benchmarks, not on long-term usability.</td></tr><tr><td>Whale</td><td>A large customer whose demands set the priorities.</td></tr><tr><td>Torso and tail</td><td>The many medium and small customers, in place of a few whales.</td></tr><tr><td>Software gravity</td><td>The ecosystem is pulled to the hardware that it already supports.</td></tr><tr><td>Systolic array</td><td>A grid of compute units for matrix math. Many AI chips use it.</td></tr><tr><td>MoE</td><td>Mixture of Experts. A model that sends each input to some sub-networks.</td></tr><tr><td>Quantization</td><td>Storing or computing numbers with fewer bits, to save cost.</td></tr><tr><td>CUDA translator</td><td>A tool that converts CUDA code for other hardware.</td></tr></tbody></table>
+      <h4>4. Numbers and dates to remember</h4>
+      <table><thead><tr><th>Item</th><th>Meaning</th></tr></thead><tbody><tr><td>More than 10 years</td><td>The time that hardware companies invested in AI chips.</td></tr><tr><td>Billions</td><td>The money that they spent.</td></tr><tr><td>2 years</td><td>The design horizon of a chip team.</td></tr></tbody></table>
+      <h4>5. Link to your program</h4>
+      <p>This part explains why Modular is a neutral software company that does not sell chips (Part 10). It also gives you questions about incentives for any vendor in the sessions.</p>
+      <h4>6. Self-test</h4>
+      <details class="q"><summary><span class="qn">Q1</span>Give the four pressures that make GenAI software hard.</summary><div class="a">The treadmill of research, competition with a whole industry, an outnumbered software team, and a business that chases whales.</div></details><details class="q"><summary><span class="qn">Q2</span>Name the four types of boat in the regatta.</summary><div class="a">Speedboats (startups), racing yachts (single-chip companies and the largest tech companies), ocean liners (Intel, AMD, Apple, Qualcomm) and the carrier (NVIDIA).</div></details><details class="q"><summary><span class="qn">Q3</span>Why do CUDA translators disappoint?</summary><div class="a">They give compatibility but not strong performance. They cannot copy hardware features such as Hopper’s Tensor Cores and TMA.</div></details>
+    </div>
+  </article>
+  
+  <article class="task" id="r-p10" data-read="p10" data-title="Part 10 · Modular’s bet to break out of the Matrix" data-ref="R1-P10">
+    <div class="task-head"><span class="tno">READING R1-P10</span><span class="ttl">Part 10 · Modular’s bet to break out of the Matrix</span><span class="time">—</span></div>
+    <div class="task-body">
+      <p class="srcline"><span class="badge later">Before the sessions</span>Chris Lattner · 8 May 2025 · <a href="https://www.modular.com/blog/modulars-bet-to-break-out-of-the-matrix-democratizing-ai-compute-part-10">Original article</a></p>
+      <h4>1. Main idea</h4>
+      <p>Lattner says the problem is the complexity that CUDA drove into the whole stack, not CUDA itself. The fix needs a whole-system solution and years of focused work. He presents the plan of Modular: long closed research, then an open release.</p>
+      <h4>2. Key points</h4>
+      <ol class="kp"><li>Promising efforts keep failing, and the stack gets heavier. Lattner praises the engineering of CUDA. But people resent it because it won. Real change is not small. It needs years of work by a large, focused team.</li><li>What “democratizing” means to Lattner: change who can build what, and how, by removing gatekeepers. It is more than running on more devices. He gave a keynote in 2021 about a unifying software layer. Nobody finished it.</li><li>He gives an analogy: Swift replaced Objective-C on the iPhone and widened the group of developers.</li><li>He gives five success criteria. A stack must serve developers and unlock full hardware performance. It must allow innovation above and below the stack. It must scale across use cases and chips, and work in production. Lattner wants the design to be modular, like LLVM.</li><li>Why do industry-scale changes fail? Not for lack of talent or money. Projects solve parts of the problem. Lattner uses the Lippitt-Knoster model, with six needs: vision, consensus, skills, incentives, resources and an action plan.</li><li>How Modular prepared. The team has engineers who worked on CUDA, TPUs, MLIR, TensorFlow and PyTorch. Modular sells no chips, clouds, foundation models or vehicles, so its incentives fit neutral software. Investors include GV and General Catalyst.</li><li>How it worked. Modular “took to the air” and left the regatta to do research for years. It proved the approach on CPUs first, because what works on CPUs can work anywhere. It stayed closed on purpose, because early outside input can kill research.</li><li>The method: use your own platform as the first user. The test: “Can real engineers build real systems, faster, with this?” The bar rose through PyTorch, TorchScript and ONNX to TensorRT-LLM, vLLM and GenAI.</li><li>A small team brought up the H100 from nothing. It ran real models in under two months. Lattner calls the speed comparable to existing stacks.</li><li>Now the platform is open. After more than three years of closed work, Modular ships major releases every 6 to 8 weeks, with nightly builds. It open-sourced over half a million lines of GPU primitives, as the article states.</li></ol>
+      
+      <div class="caution"><div class="wh">CAUTION</div><p>Modular’s founder wrote this part. The claims about speed and adoption are his claims. The article does not give independent proof.</p></div>
+      
+      <h4>3. Terms</h4>
+      <table><thead><tr><th>Term</th><th>Meaning in this source</th></tr></thead><tbody><tr><td>Democratizing AI compute</td><td>Make AI compute available to more people by lowering barriers, not only by running on more devices.</td></tr><tr><td>Lippitt-Knoster model</td><td>A model of change with six needs: vision, consensus, skills, incentives, resources and a plan.</td></tr><tr><td>Bring-up</td><td>The work to make a new chip or platform run real software.</td></tr><tr><td>TorchScript · ONNX</td><td>Ways to save and exchange PyTorch and other models.</td></tr><tr><td>TensorRT-LLM · vLLM</td><td>Two LLM inference engines. Modular used them as targets to match.</td></tr><tr><td>Moore’s Law</td><td>The trend of transistor scaling, which Lattner says is slowing.</td></tr><tr><td>GV · General Catalyst</td><td>The investors that the article names.</td></tr></tbody></table>
+      <h4>4. Numbers and dates to remember</h4>
+      <table><thead><tr><th>Item</th><th>Meaning</th></tr></thead><tbody><tr><td>More than 3 years</td><td>Closed research before the open release.</td></tr><tr><td>Under 2 months</td><td>Time to bring up the H100 and run real models.</td></tr><tr><td>6–8 weeks</td><td>Time between major releases.</td></tr><tr><td>Over 500,000 lines</td><td>GPU primitives open-sourced, as the article states.</td></tr><tr><td>6 · 5</td><td>Needs in the Lippitt-Knoster model · success criteria.</td></tr></tbody></table>
+      <h4>5. Link to your program</h4>
+      <p>Part 10 gives the reason for the closed phase. Compare it with the open design of MLIR (Part 8). Ask in the sessions which parts are open now and which parts are not.</p>
+      <h4>6. Self-test</h4>
+      <details class="q"><summary><span class="qn">Q1</span>Give the five success criteria of Lattner.</summary><div class="a">Serve developers, unlock full hardware performance, enable innovation above and below the stack, scale across use cases and chips, and work in production.</div></details><details class="q"><summary><span class="qn">Q2</span>Why did Modular stay closed in the research phase?</summary><div class="a">Too much early input from the community can kill research. Lattner cites OpenCL and MLIR as lessons.</div></details><details class="q"><summary><span class="qn">Q3</span>Name the six needs of the Lippitt-Knoster model.</summary><div class="a">Vision, consensus, skills, incentives, resources and an action plan.</div></details>
+    </div>
+  </article>
+  
+  <article class="task" id="r-p11" data-read="p11" data-title="Part 11 · How is Modular democratizing AI compute?" data-ref="R1-P11">
+    <div class="task-head"><span class="tno">READING R1-P11</span><span class="ttl">Part 11 · How is Modular democratizing AI compute?</span><span class="time">—</span></div>
+    <div class="task-body">
+      <p class="srcline"><span class="badge later">Before the sessions</span>Chris Lattner · 20 June 2025 · <a href="https://www.modular.com/blog/how-is-modular-democratizing-ai-compute">Original article</a></p>
+      <h4>1. Main idea</h4>
+      <p>Lattner says AI compute can only reach more people if the fragmented software is joined in one coherent system. The article presents the Modular Platform: Mojo, MAX and Mammoth, with open models and kernels. It scores the platform with a checklist.</p>
+      <h4>2. Key points</h4>
+      <ol class="kp"><li>Fragmentation is a “disconnected starfield”. Modular wants a “constellation”: a coherent system with a map. The cause is “dark matter”: vendor silos, siloed software stacks and old abstractions.</li><li>CUDA and OpenCL come from before the GenAI era. CUDA started the AI revolution, but GenAI needs a stack designed for it. No single hardware vendor can unify the field, because vendors build for their own chips.</li><li>The goal is one programmable system that scales across vendors and performs well on the most used GPUs and CPUs. The article says one “small binary” can run on many hardware types.</li><li>The layers work with existing tools such as PyTorch, vLLM and CUDA. A developer can enter at the layer that fits the need. See Figure 3.</li><li>Mojo is the layer closest to the hardware. It has Python-like syntax and aims for the speed of C++, Rust and CUDA. Mojo files sit beside Python modules without bindings. It can use Tensor Cores and TMAs.</li><li>MAX is the modeling and serving layer, with a PyTorch-like Python API. It covers KV-cache lifecycles, paged attention, speculative decoding and hardware-aware scheduling. The container is about 1 GB.</li><li>The article claims that one MAX binary runs on H200, B200 and MI325X. Support for MI355 and B300 is planned. It also runs on mixed CPU and GPU systems.</li><li>Mammoth is the cluster layer. It is Kubernetes-native. It turns fixed GPU capacity, on-premises or in the cloud, into an elastic inference fabric. It splits prefill and decode across GPUs and schedules many vendors as one pool.</li><li>Models and kernels are open source in the <code>modular/modular</code> repository. The kernels are written in Mojo. Researchers can start with proven parts and go deeper.</li><li>Hardware diversity is a strength. Portability across NVIDIA and AMD is shown. Modular wants more hardware partners. ASIC support is “designed for” but not yet proven.</li><li>The checklist has twelve criteria from the series. The article marks most as achieved and ASIC support as partial. The next part will cover Mojo and xPU programmability.</li></ol>
+      
+      <div class="caution"><div class="wh">CAUTION</div><p>A vendor wrote this part, and the company scored itself. The words “industry first” and “largest” are the author’s own. Part 10 says over half a million lines of open code. Part 11 says hundreds of thousands. Check numbers before you quote them.</p></div>
+      
+      
+<figure class="fig">
+  <svg viewBox="0 0 760 330" role="img" aria-labelledby="fs1">
+    <title id="fs1">Layers of the Modular Platform, from the hardware to the cluster</title>
+    <g font-family="B612, Arial, sans-serif" fill="#161616">
+      <rect x="10" y="10" width="740" height="310" fill="#fff" stroke="#161616" stroke-width="1.5"/>
+      <rect x="60" y="68" width="640" height="236" fill="#f7f9fb" stroke="#161616" stroke-width="1.5"/>
+      <rect x="110" y="126" width="540" height="170" fill="#eef6fb" stroke="#0369a1" stroke-width="2"/>
+      <rect x="210" y="226" width="340" height="52" fill="#fff" stroke="#161616" stroke-width="1.5"/>
+      <g font-size="13" font-weight="700">
+        <text x="24" y="34">MAMMOTH</text><text x="74" y="92">MAX</text><text x="124" y="150">MOJO</text>
+      </g>
+      <g font-size="11">
+        <text x="24" y="50">Cluster layer · Kubernetes · many vendors as one pool</text>
+        <text x="74" y="108">Modeling and serving · PyTorch-like API · KV cache · scheduling</text>
+        <text x="124" y="166">Language near the hardware · kernels · Tensor Cores</text>
+      </g>
+      <g text-anchor="middle">
+        <text x="380" y="250" font-size="13" font-weight="700">HARDWARE</text>
+        <text x="380" y="268" font-size="11">CPU · NVIDIA GPU · AMD GPU · other xPU</text>
+        <text x="380" y="200" font-size="11" fill="#4a4a4a">Models and kernels (open source, written in Mojo) run on these layers.</text>
+      </g>
+    </g>
+  </svg>
+  <figcaption>Figure 3 · Layers of the Modular Platform, from Part 11</figcaption>
+</figure>
+      <table class="key"><thead><tr><th>Layer</th><th>Description</th></tr></thead><tbody><tr><td>Mammoth</td><td>The outer layer. It manages GPU clusters with Kubernetes and treats many vendors as one pool.</td></tr><tr><td>MAX</td><td>The middle layer. It does modeling and serving, with a PyTorch-like Python API.</td></tr><tr><td>Mojo</td><td>The inner layer. It is the language for kernels, close to the hardware.</td></tr><tr><td>Hardware</td><td>CPUs, NVIDIA GPUs, AMD GPUs and other processors.</td></tr></tbody></table>
+      <h4>3. Terms</h4>
+      <table><thead><tr><th>Term</th><th>Meaning in this source</th></tr></thead><tbody><tr><td>Mojo</td><td>A Python-syntax language for CPUs, GPUs and other accelerators. It gives low-level control.</td></tr><tr><td>MAX</td><td>The modeling and serving layer. It has a PyTorch-like Python API.</td></tr><tr><td>Mammoth</td><td>The Kubernetes-native layer that manages GPU clusters.</td></tr><tr><td>Unified binary</td><td>One build that runs on CPUs and on GPUs from more than one vendor.</td></tr><tr><td>KV cache</td><td>Stored attention state that makes text generation faster.</td></tr><tr><td>Prefill · decode</td><td>The two stages of LLM inference. The first reads the prompt. The second makes tokens.</td></tr><tr><td>Paged attention</td><td>A method to manage attention memory in pages.</td></tr><tr><td>Speculative decoding</td><td>A method to make generation faster by guessing tokens and checking them.</td></tr><tr><td>Kubernetes</td><td>The system that manages containers on many machines.</td></tr><tr><td>xPU</td><td>Any type of processor: CPU, GPU, TPU or other accelerator.</td></tr></tbody></table>
+      <h4>4. Numbers and dates to remember</h4>
+      <table><thead><tr><th>Item</th><th>Meaning</th></tr></thead><tbody><tr><td>About 1 GB</td><td>Size of the MAX container.</td></tr><tr><td>6–8 weeks</td><td>Time between major releases.</td></tr><tr><td>3 years</td><td>The time of deep investment.</td></tr><tr><td>12</td><td>Criteria in the mission checklist.</td></tr></tbody></table>
+      <h4>5. Link to your program</h4>
+      <p>Weeks 7 to 12 teach this stack from the inside: Mojo (Weeks 7 to 9), GPU kernels (Weeks 10 and 11) and MAX (Week 12). Use the checklist to test the claims in the sessions.</p>
+      <h4>6. Self-test</h4>
+      <details class="q"><summary><span class="qn">Q1</span>Name the layers of the Modular Platform. What does each one do?</summary><div class="a">Mojo is the language near the hardware. MAX is modeling and serving. Mammoth manages GPU clusters. Models and kernels are the open-source content.</div></details><details class="q"><summary><span class="qn">Q2</span>What does the article say about ASIC support?</summary><div class="a">It is “designed for” but not yet proven. It is the one partial item on the twelve-point checklist.</div></details><details class="q"><summary><span class="qn">Q3</span>Why must you read this part with care?</summary><div class="a">Modular wrote it. The checklist is a self-assessment, and the claims have no independent proof in the article.</div></details>
+    </div>
+  </article>
+</section>
+
+<!-- ============================================================ 60 -->
+<section class="chapter" id="c-60" data-section="60-00-00 · LLVM chapter">
+  <header><span class="num">60-00-00</span><span class="wk">R2</span></header>
+  <h2>The LLVM chapter</h2>
+  <p>This chapter is required for Week 0. It explains the design that MLIR and Mojo inherit. The digest follows the order of the chapter.</p>
+  
+  <article class="task" id="r-aosa" data-read="aosa" data-title="The Architecture of Open Source Applications · “LLVM”" data-ref="R2">
+    <div class="task-head"><span class="tno">READING R2</span><span class="ttl">The Architecture of Open Source Applications · “LLVM”</span><span class="time">—</span></div>
+    <div class="task-body">
+      <p class="srcline"><span class="badge now">Week 0</span>Chris Lattner · The Architecture of Open Source Applications, Volume 1 (2011) · <a href="https://aosabook.org/en/v1/llvm.html">Original article</a></p>
+      <h4>1. Main idea</h4>
+      <p>This chapter explains why LLVM is built as a set of reusable libraries around one well-defined IR. The three-phase compiler design, the modular pass pipeline and the declarative target descriptions come from this idea. MLIR and Mojo use the same principles.</p>
+      <h4>2. Key points</h4>
+      <ol class="kp"><li><b>Introduction.</b> LLVM began in December 2000. It is an umbrella project of low-level tools. Its special feature is its architecture. Before LLVM, language implementations were monolithic. Parsers were hard to reuse, and static and runtime languages shared little code.</li><li><b>Classic compiler design.</b> The front end parses and checks the source and builds an AST. The optimizer makes the code faster and does not depend on the language or target. The back end maps the code to a target instruction set.</li><li>Typical back-end tasks are instruction selection, register allocation and instruction scheduling. Interpreters and JIT compilers follow the same model. The JVM uses bytecode as the border between front end and optimizer.</li><li><b>Implications.</b> With a shared optimizer, a new language needs only a new front end, and a new target needs only a new back end. You build N + M parts, not N × M compilers. A shared compiler also attracts a large community.</li><li><b>Earlier systems.</b> The Java and .NET virtual machines share a JIT and a runtime, but they force a garbage collector and an object model. Translation to C is easy, but it hurts exceptions, debugging and compile speed.</li><li>GCC has many front ends and back ends. But it grew from a C compiler with languages added on top. It is hard to embed or to use as a JIT. Global state, weak invariants and layering violations are the causes.</li><li><b>LLVM IR.</b> It is a low-level, RISC-like virtual instruction set. It has simple instructions in three-address form, labels and basic blocks, a simple static type system, and call and return. It has an unlimited number of named temporaries that start with <code>%</code>.</li><li>IR has three equal forms: text (<code>.ll</code>), an in-memory data structure, and compact bitcode (<code>.bc</code>). The tools <code>llvm-as</code> and <code>llvm-dis</code> convert between text and bitcode.</li><li>The chapter shows two small functions. <code>add1</code> adds two integers with one instruction. <code>add2</code> uses a compare, a branch and a recursive call. Its C form is a recursive function that adds in an inefficient way.</li><li><b>Writing an optimization.</b> Most optimizations do three steps: match a pattern, check that the change is safe, and change the code. The example is arithmetic identities, such as X − X = 0 and X − 0 = X. These do not always hold for IEEE floating point.</li><li>LLVM gives a simplification interface with a helper for each opcode. A template-based matching library, with names that start with <code>m_</code>, describes patterns. <code>replaceAllUsesWith</code> then swaps the old value for the simpler one.</li><li><b>IR as the only interface.</b> A front-end author must only know the IR. Because IR has a text form, a front end can write text and pipe it through any optimizer and code generator. GCC did not have this property.</li><li><b>A collection of libraries.</b> The optimizer is a pipeline of passes. Each pass is a separate analysis or change. The PassManager schedules them and resolves their needs. At <code>-O0</code> Clang runs none, and at <code>-O3</code> it ran 67 passes in LLVM 2.8.</li><li>A client can choose and order passes. A JIT for image processing can skip the inliner and alias analysis. The linker includes only the passes that the client uses, because each pass is in an archive library.</li><li><b>Code generator.</b> It is also a set of passes: instruction selection, register allocation, scheduling, code layout and assembly output. A target can change or add passes. The x86 target reduces register pressure. The PowerPC target uses a latency-based scheduler.</li><li><b>TableGen.</b> Target facts are in declarative <code>.td</code> files that the <code>tblgen</code> tool processes. A register class such as <code>GR32</code> and an instruction such as <code>NOT32r</code> are the examples. One description drives selection, allocation, encoding, parsing and printing, and it can make an assembler and a disassembler.</li><li><b>Choose when each phase runs.</b> Bitcode can be saved. Link-time optimization (LTO) optimizes the whole program when the linker joins the files. Install-time optimization makes machine code on the user’s device.</li><li><b>Unit tests.</b> LLVM tests load textual IR, run one pass and check the output with <code>FileCheck</code>. This is better than a test that compiles a whole C file. <b>BugPoint</b> automatically reduces a failing input to a small one.</li><li><b>Retrospective.</b> Modularity is a defense against mistakes, because you can replace a part. LLVM accepts API-breaking changes and keeps old <code>.ll</code> and <code>.bc</code> files readable. Lattner gives LLDB as an example of reuse. He warns that LLVM can calcify with age.</li></ol>
+      
+      
+      
+      <div class="what"><div class="wh">WHAT HAS CHANGED SINCE 2011</div>
+        <p>The ideas are still correct. Some details are not the same in LLVM 18, which you installed in Week 0.</p>
+        <ul>
+          <li>Pointers. The chapter writes typed pointers, for example <code>i32**</code>. Current IR uses one opaque pointer type, <code>ptr</code>.</li>
+          <li>Pass manager. The <code>FunctionPass</code> and <code>runOnFunction</code> style is the old pass manager. The new pass manager is the default. This is why Week 1 uses <code>opt -passes=...</code>.</li>
+          <li>Constant propagation. The old <code>constprop</code> pass is gone. The <code>instsimplify</code> and <code>instcombine</code> passes fold constants now.</li>
+          <li>Test reduction. LLVM now has <code>llvm-reduce</code>, which the documents recommend for most cases. BugPoint still exists.</li>
+          <li>TableGen. It is still in use. MLIR uses it to define operations (ODS) in Weeks 5 and 6.</li>
+        </ul>
+      </div>
+      <h4>3. Terms</h4>
+      <table><thead><tr><th>Term</th><th>Meaning in this source</th></tr></thead><tbody><tr><td>Front end · optimizer · back end</td><td>The three phases of a classic compiler.</td></tr><tr><td>AST</td><td>Abstract syntax tree. The tree form of the source code.</td></tr><tr><td>Basic block</td><td>A run of instructions with one entry. Only the last instruction can branch.</td></tr><tr><td>Three-address form</td><td>Each instruction has inputs and a separate result.</td></tr><tr><td>Bitcode</td><td>The compact binary form of LLVM IR (<code>.bc</code>).</td></tr><tr><td>Pass · PassManager</td><td>A unit of analysis or change on IR. The PassManager schedules passes.</td></tr><tr><td>Peephole change</td><td>A local optimization on a small group of instructions.</td></tr><tr><td>JIT</td><td>Just-in-time compiler. It makes machine code while the program runs.</td></tr><tr><td>LTO</td><td>Link-time optimization. Whole-program optimization at link time.</td></tr><tr><td>TableGen · <code>.td</code></td><td>The LLVM language to describe targets in a declarative way.</td></tr><tr><td>FileCheck</td><td>A tool that checks text output against patterns in a test.</td></tr><tr><td>BugPoint</td><td>A tool that shrinks a failing input to a small test case.</td></tr></tbody></table>
+      <h4>4. Numbers and dates to remember</h4>
+      <table><thead><tr><th>Item</th><th>Meaning</th></tr></thead><tbody><tr><td>December 2000</td><td>LLVM begins.</td></tr><tr><td>N + M</td><td>Parts that you build with a shared IR, instead of N × M compilers.</td></tr><tr><td>67</td><td>Passes that Clang ran at <code>-O3</code> in LLVM 2.8.</td></tr><tr><td>2002</td><td>The year of BugPoint, as the chapter says.</td></tr></tbody></table>
+      <h4>5. Link to your program</h4>
+      <p>Weeks 1 to 3 teach LLVM IR, Kaleidoscope and passes. The chapter’s ideas come back in MLIR: the passes, the pass manager and TableGen. MLIR makes the “one IR” idea more general with dialects (Part 8).</p>
+      <h4>6. Self-test</h4>
+      <details class="q"><summary><span class="qn">Q1</span>Why do N front ends and M back ends need only N + M parts?</summary><div class="a">The optimizer works on one shared IR. Each front end makes that IR, and each back end reads it. There is no need for each pair.</div></details><details class="q"><summary><span class="qn">Q2</span>Name the three forms of LLVM IR.</summary><div class="a">Text (<code>.ll</code>), an in-memory data structure and binary bitcode (<code>.bc</code>).</div></details><details class="q"><summary><span class="qn">Q3</span>What is link-time optimization?</summary><div class="a">The compiler saves bitcode in the object files. The linker joins them and then optimizes the whole program, so it can inline across files.</div></details><details class="q"><summary><span class="qn">Q4</span>Why is a textual IR good for testing?</summary><div class="a">A test loads IR, runs one pass and checks the result. The test does not depend on the front end or on other passes.</div></details>
+    </div>
+  </article>
+</section>
+
+<!-- ============================================================ 70 -->
+<section class="chapter" id="c-70" data-section="70-00-00 · Preparation for the sessions">
+  <header><span class="num">70-00-00</span><span class="wk">Sessions</span></header>
+  <h2>Preparation for the sessions</h2>
+
+  <h3>1. The four questions of the manual</h3>
+  <table>
+    <caption>Table 6 · Questions, background and what to listen for</caption>
+    <thead><tr><th>Question</th><th>Background in this guide</th><th>What to listen for</th></tr></thead>
+    <tbody>
+      <tr><td>How do Mojo parameters map to MLIR? When does the compiler resolve them?</td><td>Part 8 (dialects and lowering). Part 7 (limits of eDSLs). Part 11 (Mojo).</td><td>Which MLIR dialects appear in the path from Mojo source to machine code.</td></tr>
+      <tr><td>How much does MAX use upstream dialects such as <code>linalg</code>?</td><td>Part 8: the dialects arith, linalg and tensor, and the idea of a separate “TensorIR”.</td><td>The words “upstream” and “our own”. Which dialects Modular keeps and which it replaced.</td></tr>
+      <tr><td>Where does MAX decide on fusion?</td><td>Part 6 (kernel fusion, Figure 2). Part 11 (the MAX layer).</td><td>If the graph compiler or the Mojo kernels make the decision.</td></tr>
+      <tr><td>For GPU targets, what goes through LLVM?</td><td>R2 (the code generator). Part 2 (PTX). Part 11 (Mojo and the hardware).</td><td>The step where code leaves MLIR, and the role of NVPTX and AMDGPU.</td></tr>
+    </tbody>
+  </table>
+
+  <h3>2. Seven more questions from the series</h3>
+  <ol class="kp">
+    <li>Part 7: Triton is an eDSL, and an eDSL “looks like Python but is not Python”. Is Mojo a real language or an eDSL? How does it avoid this problem?</li>
+    <li>Part 8: Did Modular keep the upstream dialects arith, linalg and tensor? Or did it define its own?</li>
+    <li>Part 6: What is the unit of fusion in MAX? Does it use auto-tuning, and how does it keep compile times short?</li>
+    <li>Part 9: How does Modular avoid “chasing the whale” when a large customer asks for a custom feature?</li>
+    <li>Part 11: What does a hardware vendor write to add a new accelerator? What does Modular write?</li>
+    <li>Parts 4 and 10: How does Modular handle changes between NVIDIA generations, for example Hopper to Blackwell?</li>
+    <li>Part 10: Which parts are open source now, and which are not? What happens to the closed parts?</li>
+  </ol>
+
+  <h3>3. Claims to check</h3>
+  <ul>
+    <li>“One binary” runs on NVIDIA GPUs, AMD GPUs and CPUs (Part 11). Ask for the conditions.</li>
+    <li>Top speed on Hopper and Blackwell (Part 11). Ask for the benchmark, the model and the baseline.</li>
+    <li>The size of the open-source code: over half a million lines (Part 10), hundreds of thousands (Part 11).</li>
+    <li>The checklist of twelve items is a self-assessment. Ask which items are not yet met.</li>
+  </ul>
+
+  <h3>4. Where the reading connects to your program</h3>
+  <table>
+    <caption>Table 7 · Reading and program weeks</caption>
+    <thead><tr><th>Reading</th><th>Practice in the program</th></tr></thead>
+    <tbody>
+      <tr><td>R2 (LLVM chapter)</td><td>Weeks 1 to 3. LLVM IR, Kaleidoscope, passes.</td></tr>
+      <tr><td>Part 8 (MLIR)</td><td>Weeks 4 to 6. MLIR build, Toy tutorial, lowering.</td></tr>
+      <tr><td>Part 6 (AI compilers)</td><td>Week 6 (lowering and fusion ideas) and Week 12 (the MAX graph compiler).</td></tr>
+      <tr><td>Part 7 (eDSLs)</td><td>Week 8. Mojo parameters and SIMD.</td></tr>
+      <tr><td>Parts 2 and 4 (CUDA)</td><td>Weeks 10 and 11. GPU kernels and the Mojo GPU Puzzles.</td></tr>
+      <tr><td>Parts 10 and 11 (Modular)</td><td>Weeks 7 to 12. Mojo, GPU and MAX.</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ============================================================ 80 -->
+<section class="chapter" id="c-80" data-section="80-00-00 · Glossary">
+  <header><span class="num">80-00-00</span><span class="wk">Reference</span></header>
+  <h2>Glossary</h2>
+  <p>The last column gives the sources: P is a part of the series, and R2 is the LLVM chapter.</p>
+  <table class="glossary">
+    <thead><tr><th>Term</th><th>Meaning</th><th>Source</th></tr></thead>
+    <tbody><tr><td>AI compiler</td><td>A system that turns framework operations into efficient code for chips.</td><td>P6</td></tr><tr><td>Area Team</td><td>The elected LLVM group that guides MLIR.</td><td>P8</td></tr><tr><td>AST</td><td>Abstract syntax tree. The tree form of source code.</td><td>P7, R2</td></tr><tr><td>Auto-tuning</td><td>An automatic search for the best kernel settings.</td><td>P6</td></tr><tr><td>Back end</td><td>The compiler phase that makes code for one target.</td><td>R2</td></tr><tr><td>Basic block</td><td>A run of instructions with one entry point.</td><td>R2</td></tr><tr><td>Bitcode</td><td>The compact binary form of LLVM IR.</td><td>R2</td></tr><tr><td>Blackwell</td><td>The newer NVIDIA GPU architecture, after Hopper.</td><td>P3, P4</td></tr><tr><td>CapEx</td><td>Capital expenditure. Spending on long-life assets.</td><td>P3, P9</td></tr><tr><td>CIRCT</td><td>An MLIR-based project for hardware design.</td><td>P8</td></tr><tr><td>Coopetition</td><td>Competitors who cooperate in a standard and compete in business.</td><td>P5, P8</td></tr><tr><td>CUDA</td><td>The NVIDIA platform for GPU programming.</td><td>P2</td></tr><tr><td>CUDA moat</td><td>The advantage of NVIDIA from the CUDA ecosystem and lock-in.</td><td>P3, P4</td></tr><tr><td>cuDNN · cuBLAS</td><td>NVIDIA libraries for deep-learning blocks and linear algebra.</td><td>P2</td></tr><tr><td>CUTLASS</td><td>A C++ template library from NVIDIA for matrix operations.</td><td>P4, P7</td></tr><tr><td>Dialect</td><td>A set of operations, types and rules for one domain in MLIR.</td><td>P8</td></tr><tr><td>eDSL</td><td>A domain-specific language that is hosted in another language.</td><td>P7</td></tr><tr><td>Fork</td><td>A separate copy of code that changes on its own.</td><td>P5, P6</td></tr><tr><td>Front end</td><td>The compiler phase that reads the source and makes the IR.</td><td>R2</td></tr><tr><td>HBM · SRAM</td><td>Large off-chip GPU memory · small fast on-chip memory.</td><td>P3</td></tr><tr><td>Hopper</td><td>An NVIDIA GPU architecture, the H100 generation.</td><td>P3, P4</td></tr><tr><td>Hyrum’s Law</td><td>Users depend on all visible behavior, so each change breaks something.</td><td>P8</td></tr><tr><td>Install base</td><td>The number of devices that run a platform.</td><td>P3</td></tr><tr><td>IR</td><td>Intermediate representation. The form of code between source and machine code.</td><td>R2, P8</td></tr><tr><td>Kernel</td><td>A function that runs on the GPU, in many copies at once.</td><td>P2</td></tr><tr><td>Kernel fusion</td><td>Joining operations in one kernel to avoid writes to memory.</td><td>P6</td></tr><tr><td>KV cache</td><td>Stored attention state that makes text generation faster.</td><td>P11</td></tr><tr><td>LLVM</td><td>The compiler infrastructure that Lattner founded.</td><td>P1, R2</td></tr><tr><td>Lock-in</td><td>The cost of change is too high, so users stay with one vendor.</td><td>P3</td></tr><tr><td>LTO</td><td>Link-time optimization. Whole-program optimization when linking.</td><td>R2</td></tr><tr><td>Mammoth</td><td>The Kubernetes-native GPU cluster layer of Modular.</td><td>P11</td></tr><tr><td>MAX</td><td>The modeling and serving layer of Modular.</td><td>P11</td></tr><tr><td>MLIR</td><td>A framework to build compilers with many IR levels.</td><td>P8</td></tr><tr><td>MLIR Core</td><td>The domain-independent part of MLIR.</td><td>P8</td></tr><tr><td>Mojo</td><td>The Python-syntax language of Modular for CPUs, GPUs and accelerators.</td><td>P11</td></tr><tr><td>MoE</td><td>Mixture of Experts. A model that sends each input to some sub-networks.</td><td>P9</td></tr><tr><td>Network effect</td><td>More users make more software, which attracts more users.</td><td>P3</td></tr><tr><td>OpenCL · SYCL · oneAPI</td><td>Portable compute standards that did not become the platform for AI.</td><td>P5</td></tr><tr><td>OpenXLA</td><td>The public CPU and GPU part of XLA.</td><td>P6</td></tr><tr><td>Pass</td><td>A unit of analysis or change on IR.</td><td>R2</td></tr><tr><td>Performance portability</td><td>Code that runs well on new hardware without a rewrite.</td><td>P2</td></tr><tr><td>PTX</td><td>The assembly-like language for NVIDIA GPUs.</td><td>P2</td></tr><tr><td>Reference implementation</td><td>One working shared code base that defines a standard.</td><td>P5</td></tr><tr><td>SIMT</td><td>Single instruction, multiple threads. The GPU execution model.</td><td>P7</td></tr><tr><td>Software gravity</td><td>The ecosystem is pulled to the hardware that it already supports.</td><td>P9</td></tr><tr><td>SSA</td><td>Static single assignment. Each value is defined once.</td><td>P8, R2</td></tr><tr><td>StableHLO</td><td>The shared operator set of XLA-TPU and OpenXLA.</td><td>P6</td></tr><tr><td>TableGen</td><td>The LLVM language to describe targets in a declarative way.</td><td>R2</td></tr><tr><td>TCO</td><td>Total cost of ownership.</td><td>P1</td></tr><tr><td>Tensor Core</td><td>A GPU unit that does small matrix multiplications at high speed.</td><td>P4</td></tr><tr><td>TPU</td><td>The AI accelerator of Google.</td><td>P1</td></tr><tr><td>Triton (language)</td><td>The OpenAI Python eDSL for GPU kernels.</td><td>P7</td></tr><tr><td>Triton Serving</td><td>An NVIDIA product to serve models. It is not the Triton language.</td><td>P2</td></tr><tr><td>TVM</td><td>An early open-source AI compiler.</td><td>P6</td></tr><tr><td>Warp</td><td>A group of GPU threads that the hardware runs together.</td><td>P2</td></tr><tr><td>XLA</td><td>The AI compiler of Google, built for the TPU.</td><td>P6</td></tr></tbody>
+  </table>
+</section>
+
+<!-- ============================================================ 90 -->
+<section class="chapter" id="c-90" data-section="90-00-00 · Reading record">
+  <header><span class="num">90-00-00</span><span class="wk">Record</span></header>
+  <h2>Reading record</h2>
+  <table class="record">
+    <caption>Record sheet · Reading</caption>
+    <thead><tr><th>Source</th><th>Title</th><th>Time</th><th>Status</th><th>Date</th></tr></thead>
+    <tbody></tbody>
+  </table>
+</section>
+
+<p class="end">END OF ISSUE 1 · REVISION 0</p>
+
+</main>
+
+<script>
+(function () {
+  'use strict';
+  var KEY = 'tm-mlir-002:v1';
+  var state;
+  try { state = JSON.parse(localStorage.getItem(KEY)) || {}; } catch (e) { state = {}; }
+  state.read = state.read || {};
+  function save() { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) { /* storage unavailable */ } }
+  function today() {
+    var d = new Date();
+    return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+  }
+
+  var arts = Array.prototype.slice.call(document.querySelectorAll('article[data-read]'));
+  var minutes = {};
+
+  function readingMinutes(a) {
+    var clone = a.querySelector('.task-body').cloneNode(true);
+    clone.querySelectorAll('.a').forEach(function (n) { n.remove(); });
+    var words = clone.textContent.split(/\s+/).filter(Boolean).length;
+    return Math.max(1, Math.round(words / 180));
+  }
+
+  function refresh() {
+    var n = arts.length, done = arts.filter(function (a) { return state.read[a.dataset.read]; }).length;
+    document.getElementById('progress-bar').style.width = (n ? 100 * done / n : 0) + '%';
+    document.getElementById('progress-label').textContent = done + ' / ' + n + ' read';
+    var rows = '';
+    arts.forEach(function (a) {
+      var id = a.dataset.read, d = state.read[id];
+      rows += '<tr' + (d ? ' class="ok"' : '') + '><td class="mono"><a href="#' + a.id + '">' + a.dataset.ref + '</a></td><td>' +
+        a.dataset.title + '</td><td>' + minutes[id] + ' min</td><td>' + (d ? 'READ' : 'OPEN') + '</td><td class="mono">' + (d || '—') + '</td></tr>';
+    });
+    document.querySelector('table.record tbody').innerHTML = rows;
+  }
+
+  arts.forEach(function (a) {
+    var id = a.dataset.read;
+    minutes[id] = readingMinutes(a);
+    a.querySelector('.time').textContent = 'About ' + minutes[id] + ' min';
+    var so = document.createElement('div');
+    so.className = 'signoff';
+    var label = document.createElement('label');
+    var cb = document.createElement('input');
+    cb.type = 'checkbox';
+    cb.checked = !!state.read[id];
+    cb.setAttribute('aria-label', 'Mark ' + a.dataset.ref + ' as read');
+    label.appendChild(cb);
+    label.appendChild(document.createTextNode('I have read this digest'));
+    var st = document.createElement('span');
+    so.appendChild(label);
+    so.appendChild(st);
+    a.appendChild(so);
+    function paint() {
+      so.classList.toggle('complete', cb.checked);
+      st.textContent = cb.checked ? 'Read · ' + state.read[id] : 'Open';
+    }
+    cb.addEventListener('change', function () {
+      if (cb.checked) state.read[id] = today(); else delete state.read[id];
+      paint(); save(); refresh();
+    });
+    paint();
+  });
+  refresh();
+
+  var mid = document.getElementById('runhead-section');
+  if ('IntersectionObserver' in window) {
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) { if (e.isIntersecting) mid.textContent = e.target.dataset.section; });
+    }, { rootMargin: '-12% 0px -80% 0px' });
+    document.querySelectorAll('[data-section]').forEach(function (s) { io.observe(s); });
+  }
+
+  document.getElementById('reset').addEventListener('click', function () {
+    if (confirm('Clear all read marks in this browser?')) { localStorage.removeItem(KEY); location.reload(); }
+  });
+})();
+</script>
+</body>
+</html>

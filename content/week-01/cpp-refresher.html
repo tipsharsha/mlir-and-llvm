@@ -1,0 +1,313 @@
+<!-- TASK 01-10-00-200-801 -->
+  <article class="task" id="t-01-10-00-200-801" data-task="01-10-00-200-801" data-week="1" data-title="Study the C++ subset that LLVM uses" data-time="2 h">
+    <div class="task-head"><span class="tno">TASK 01-10-00-200-801</span><span class="ttl">Study the C++ subset that LLVM uses</span><span class="time">2 h</span></div>
+    <div class="task-body">
+      <h4>1. General</h4>
+      <p>LLVM and MLIR have a large C++ code base. But the tutorials use a small subset of C++. This task refreshes that subset only.</p>
+      <p>Table 6 gives the subset. The last column shows where LLVM or MLIR uses each item.</p>
+      <h4>2. Job set-up information</h4>
+      <table>
+        <thead><tr><th>Tools and equipment</th><th>Referenced information</th></tr></thead>
+        <tbody><tr><td>Web browser</td><td>R6, R7, R8. Optional book: <i>A Tour of C++</i>, third edition (B. Stroustrup).</td></tr></tbody>
+      </table>
+      <table>
+        <caption>Table 6 · The C++ subset for Weeks 1 to 6</caption>
+        <thead><tr><th class="c">Item</th><th>Subject</th><th>What to know</th><th>Where LLVM or MLIR uses it</th></tr></thead>
+        <tbody>
+          <tr><td class="c">1</td><td>References and <code>const</code></td><td><code>const T &amp;</code> gives an object to a function without a copy.</td><td>Most of the LLVM API.</td></tr>
+          <tr><td class="c">2</td><td>Classes</td><td>Constructors, member initializer lists, <code>explicit</code>, <code>public</code> and <code>private</code>.</td><td>All AST nodes and IR objects.</td></tr>
+          <tr><td class="c">3</td><td>Inheritance and virtual functions</td><td><code>virtual</code>, <code>override</code>, pure virtual functions (<code>= 0</code>), virtual destructors.</td><td>The Kaleidoscope AST (Week 2).</td></tr>
+          <tr><td class="c">4</td><td>Smart pointers and move</td><td><code>std::unique_ptr</code>, <code>std::make_unique</code>, <code>std::move</code>. Each object has one owner.</td><td>The Kaleidoscope AST. <code>std::unique_ptr&lt;Module&gt;</code>.</td></tr>
+          <tr><td class="c">5</td><td>Standard containers</td><td><code>std::vector</code>, <code>std::map</code>, <code>std::string</code>.</td><td>Everywhere. LLVM also has <code>SmallVector</code>, <code>DenseMap</code> and <code>StringRef</code>.</td></tr>
+          <tr><td class="c">6</td><td><code>enum</code> and <code>enum class</code></td><td>Named integer constants.</td><td>The token types in Kaleidoscope.</td></tr>
+          <tr><td class="c">7</td><td>Templates (read only)</td><td>Read <code>Foo&lt;T&gt;</code>. Call template functions. You do not write templates in Week 1.</td><td><code>SmallVector&lt;Value *, 8&gt;</code>, <code>cast&lt;CallInst&gt;(I)</code>.</td></tr>
+          <tr><td class="c">8</td><td><code>auto</code>, range-based <code>for</code>, lambdas</td><td><code>for (auto &amp;BB : F)</code> and <code>[&amp;](int X) { ... }</code>.</td><td>Passes go through functions, blocks and instructions. MLIR uses <code>op-&gt;walk(...)</code>.</td></tr>
+          <tr><td class="c">9</td><td>LLVM-style RTTI</td><td><code>isa&lt;T&gt;(X)</code>, <code>cast&lt;T&gt;(X)</code>, <code>dyn_cast&lt;T&gt;(X)</code>. LLVM does not use <code>dynamic_cast</code>.</td><td>All LLVM and MLIR code.</td></tr>
+          <tr><td class="c">10</td><td>Build model</td><td>Header and source files. Compile, then link. CMake.</td><td>LLVM and MLIR build with CMake and Ninja (Week 4).</td></tr>
+        </tbody>
+      </table>
+      <h4>3. Procedure</h4>
+      <ol class="steps">
+        <li class="step"><b class="n">(1)</b><div class="body">Read Table 6.</div></li>
+        <li class="step"><b class="n">(2)</b><div class="body">For each item in Table 6 that you do not remember, read the related lessons in R6.</div></li>
+        <li class="step"><b class="n">(3)</b><div class="body">In R7, read the section “The isa&lt;&gt;, cast&lt;&gt; and dyn_cast&lt;&gt; templates”.</div></li>
+        <li class="step"><b class="n">(4)</b><div class="body">In R8, read the section about the names of types, functions and variables.</div></li>
+      </ol>
+      <div class="note"><span class="nh">NOTE:</span>LLVM names variables with an upper-case first letter, for example <code>LHS</code> and <code>Val</code>. The code in Week 1 uses the same style.</div>
+    </div>
+  </article>
+
+  <!-- TASK 01-10-00-700-801 -->
+  <article class="task" id="t-01-10-00-700-801" data-task="01-10-00-700-801" data-week="1" data-title="Write an expression tree in C++" data-time="90 min">
+    <div class="task-head"><span class="tno">TASK 01-10-00-700-801</span><span class="ttl">Write an expression tree in C++</span><span class="time">90 min</span></div>
+    <div class="task-body">
+      <h4>1. General</h4>
+      <p>This exercise uses items 2 to 6 of Table 6. The class names are the same as in the Kaleidoscope tutorial.</p>
+      <p>The program makes the tree for the expression <code>(x + 2) * 4</code>. Then it calculates the value and shows the expression. Figure 2 shows the tree.</p>
+
+      <figure class="fig">
+        <svg viewBox="0 0 640 248" role="img" aria-labelledby="f2t">
+          <title id="f2t">Expression tree for (x + 2) * 4</title>
+          <defs>
+            <marker id="ar2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M0,0 L10,5 L0,10 z" fill="#161616"/>
+            </marker>
+          </defs>
+          <g font-family="B612, Arial, sans-serif" fill="#161616">
+            <g stroke="#161616" stroke-width="1.5" marker-end="url(#ar2)">
+              <line x1="300" y1="56" x2="180" y2="99"/>
+              <line x1="340" y1="56" x2="460" y2="99"/>
+              <line x1="155" y1="146" x2="100" y2="189"/>
+              <line x1="195" y1="146" x2="280" y2="189"/>
+            </g>
+            <g font-size="11" font-weight="700" fill="#0369a1">
+              <text x="214" y="74">LHS</text>
+              <text x="404" y="74">RHS</text>
+              <text x="98" y="166">LHS</text>
+              <text x="246" y="166">RHS</text>
+            </g>
+            <g stroke="#161616" stroke-width="1.5" fill="#fff">
+              <rect x="235" y="10" width="170" height="46"/>
+              <rect x="90" y="100" width="170" height="46"/>
+              <rect x="380" y="100" width="170" height="46"/>
+              <rect x="10" y="190" width="170" height="46"/>
+              <rect x="200" y="190" width="170" height="46"/>
+            </g>
+            <g text-anchor="middle">
+              <text x="320" y="30" font-size="12.5" font-weight="700">BinaryExprAST</text>
+              <text x="320" y="47" font-size="11" font-family="B612 Mono, Consolas, monospace">Op = '*'</text>
+              <text x="175" y="120" font-size="12.5" font-weight="700">BinaryExprAST</text>
+              <text x="175" y="137" font-size="11" font-family="B612 Mono, Consolas, monospace">Op = '+'</text>
+              <text x="465" y="120" font-size="12.5" font-weight="700">NumberExprAST</text>
+              <text x="465" y="137" font-size="11" font-family="B612 Mono, Consolas, monospace">Val = 4</text>
+              <text x="95" y="210" font-size="12.5" font-weight="700">VariableExprAST</text>
+              <text x="95" y="227" font-size="11" font-family="B612 Mono, Consolas, monospace">Name = "x"</text>
+              <text x="285" y="210" font-size="12.5" font-weight="700">NumberExprAST</text>
+              <text x="285" y="227" font-size="11" font-family="B612 Mono, Consolas, monospace">Val = 2</text>
+            </g>
+            <text x="630" y="230" font-size="11" text-anchor="end" fill="#4a4a4a">Each arrow is a std::unique_ptr.</text>
+            <text x="630" y="244" font-size="11" text-anchor="end" fill="#4a4a4a">The parent owns the child.</text>
+          </g>
+        </svg>
+        <figcaption>Figure 2 · Expression tree for (x + 2) * 4</figcaption>
+      </figure>
+
+      <h4>2. Job set-up information</h4>
+      <table>
+        <thead><tr><th>Tools and equipment</th><th>Referenced information</th></tr></thead>
+        <tbody><tr><td>Ubuntu shell, <code>clang++</code>, a text editor</td><td>Table 6, R6</td></tr></tbody>
+      </table>
+      <div class="caution"><div class="wh">CAUTION</div>
+        <p>WRITE THE TODO PARTS YOURSELF. DO NOT OPEN FIGURE 4 BEFORE STEP (10). If you copy the solution, the exercise does not refresh your C++.</p>
+      </div>
+
+      <figure class="fig">
+<pre class="code"><code>// expr.cpp - Week 1 C++ refresher: an expression tree.
+// The class names match the Kaleidoscope tutorial (Week 2).
+#include &lt;cstdio&gt;
+#include &lt;map&gt;
+#include &lt;memory&gt;
+#include &lt;string&gt;
+#include &lt;utility&gt;
+
+using Env = std::map&lt;std::string, double&gt;;
+
+// Base class for all expression nodes.
+class ExprAST {
+public:
+  virtual ~ExprAST() = default;
+  virtual double eval(const Env &amp;E) const = 0;
+  virtual std::string str() const = 0;
+};
+
+// A number literal, for example "4".
+class NumberExprAST : public ExprAST {
+  double Val;
+
+public:
+  explicit NumberExprAST(double Val) : Val(Val) {}
+  double eval(const Env &amp;) const override { return Val; }
+  std::string str() const override {
+    char Buf[32];
+    std::snprintf(Buf, sizeof(Buf), "%g", Val);
+    return Buf;
+  }
+};
+
+// A variable reference, for example "x".
+class VariableExprAST : public ExprAST {
+  std::string Name;
+
+public:
+  explicit VariableExprAST(std::string Name) : Name(std::move(Name)) {}
+  double eval(const Env &amp;E) const override {
+    auto It = E.find(Name);
+    if (It == E.end()) {
+      std::fprintf(stderr, "error: unknown variable '%s'\n", Name.c_str());
+      return 0.0;
+    }
+    return It-&gt;second;
+  }
+  std::string str() const override { return Name; }
+};
+
+// A binary operation, for example "x + 2".
+class BinaryExprAST : public ExprAST {
+  char Op;
+  std::unique_ptr&lt;ExprAST&gt; LHS, RHS;
+
+public:
+  BinaryExprAST(char Op, std::unique_ptr&lt;ExprAST&gt; LHS,
+                std::unique_ptr&lt;ExprAST&gt; RHS)
+      : Op(Op), LHS(std::move(LHS)), RHS(std::move(RHS)) {}
+
+  double eval(const Env &amp;E) const override {
+    // TODO (step 6): Calculate LHS-&gt;eval(E) and RHS-&gt;eval(E).
+    //   Then apply Op. Support '+', '-', '*', '/' and '&lt;'.
+    //   For '&lt;', return 1.0 if the result is true, else 0.0.
+    (void)E;  // Remove these two lines when you write the code.
+    (void)Op;
+    return 0.0;
+  }
+
+  std::string str() const override {
+    // TODO (step 7): Return the text "(LHS Op RHS)", for example "(x + 2)".
+    return "?";
+  }
+};
+
+int main() {
+  // Make the tree for: (x + 2) * 4
+  auto Sum = std::make_unique&lt;BinaryExprAST&gt;(
+      '+', std::make_unique&lt;VariableExprAST&gt;("x"),
+      std::make_unique&lt;NumberExprAST&gt;(2));
+  std::unique_ptr&lt;ExprAST&gt; Root = std::make_unique&lt;BinaryExprAST&gt;(
+      '*', std::move(Sum), std::make_unique&lt;NumberExprAST&gt;(4));
+
+  Env E = {{"x", 3.0}};
+  std::printf("%s\n", Root-&gt;str().c_str());
+  std::printf("= %g\n", Root-&gt;eval(E));
+  return 0;
+}</code></pre>
+        <figcaption>Figure 3 · Skeleton of expr.cpp</figcaption>
+      </figure>
+
+      <h4>3. Procedure</h4>
+      <div class="subtask">SUBTASK 01-10-00-700-001<span>Write and compile the skeleton</span></div>
+      <ol class="steps">
+        <li class="step"><b class="n">(1)</b><div class="body">Go to the work directory:
+<pre class="cmd" data-sh="WSL"><code>cd ~/lab/week-01</code></pre></div></li>
+        <li class="step"><b class="n">(2)</b><div class="body">Make the file <code>expr.cpp</code> with the code from Figure 3.</div></li>
+        <li class="step"><b class="n">(3)</b><div class="body">Compile the program with the sanitizers:
+<pre class="cmd" data-sh="WSL"><code>clang++ -std=c++17 -g -Wall -Wextra -fsanitize=address,undefined expr.cpp -o expr</code></pre></div></li>
+        <li class="step"><b class="n">(4)</b><div class="body">Run the program:
+<pre class="cmd" data-sh="WSL"><code>./expr</code></pre></div></li>
+        <li class="step"><b class="n">(5)</b><div class="body">Make sure that the output is <code>?</code> on the first line and <code>= 0</code> on the second line.</div></li>
+      </ol>
+      <div class="subtask">SUBTASK 01-10-00-700-002<span>Complete the class BinaryExprAST</span></div>
+      <ol class="steps">
+        <li class="step"><b class="n">(6)</b><div class="body">Write the function <code>eval()</code> of <code>BinaryExprAST</code>. Obey the TODO comment.</div></li>
+        <li class="step"><b class="n">(7)</b><div class="body">Write the function <code>str()</code> of <code>BinaryExprAST</code>.</div></li>
+        <li class="step"><b class="n">(8)</b><div class="body">Compile the program again. Use the command in step (3).</div></li>
+        <li class="step"><b class="n">(9)</b><div class="body">Run the program.</div></li>
+        <li class="step"><b class="n">(10)</b><div class="body">Make sure that the output is:
+<pre class="code"><code>((x + 2) * 4)
+= 20</code></pre></div></li>
+        <li class="step"><b class="n">(11)</b><div class="body">Make sure that the sanitizers show no error messages.</div></li>
+        <li class="step"><b class="n">(12)</b><div class="body">In <code>main()</code>, change the value of <code>x</code> to 10. Then do steps (8) and (9) again.</div></li>
+        <li class="step"><b class="n">(13)</b><div class="body">Make sure that the result is <code>= 48</code>.</div></li>
+      </ol>
+      <div class="subtask">SUBTASK 01-10-00-700-003<span>Examine the ownership rule</span></div>
+      <ol class="steps">
+        <li class="step"><b class="n">(14)</b><div class="body">In the constructor of <code>BinaryExprAST</code>, change <code>LHS(std::move(LHS))</code> to <code>LHS(LHS)</code>.</div></li>
+        <li class="step"><b class="n">(15)</b><div class="body">Compile the program. Use the command in step (3).</div></li>
+        <li class="step"><b class="n">(16)</b><div class="body">Make sure that the compiler shows an error about a deleted copy constructor of <code>std::unique_ptr</code>.</div></li>
+        <li class="step"><b class="n">(17)</b><div class="body">Put <code>std::move</code> back in the constructor.</div></li>
+        <li class="step"><b class="n">(18)</b><div class="body">Compile the program. Make sure that the compiler shows no errors.</div></li>
+      </ol>
+      <div class="note"><span class="nh">NOTE:</span>A <code>std::unique_ptr</code> has only one owner. You cannot copy it. You can only move it to a new owner. The error in step (16) shows this rule.</div>
+      <div class="subtask">SUBTASK 01-10-00-700-004<span>Add a unary operator (optional)</span></div>
+      <ol class="steps">
+        <li class="step opt"><b class="n">(19)</b><div class="body"><span class="tag">OPTIONAL</span>Add the class <code>UnaryExprAST</code>. It has one operand and the operator <code>-</code> (minus).</div></li>
+        <li class="step opt"><b class="n">(20)</b><div class="body"><span class="tag">OPTIONAL</span>In <code>main()</code>, make the tree for <code>-(x + 2)</code>. Set <code>x</code> to 3.</div></li>
+        <li class="step opt"><b class="n">(21)</b><div class="body"><span class="tag">OPTIONAL</span>Make sure that the result is <code>= -5</code>.</div></li>
+      </ol>
+
+      <details class="solution">
+        <summary>Figure 4 · Reference solution for BinaryExprAST (open after step (10))</summary>
+<pre class="code"><code>class BinaryExprAST : public ExprAST {
+  char Op;
+  std::unique_ptr&lt;ExprAST&gt; LHS, RHS;
+
+public:
+  BinaryExprAST(char Op, std::unique_ptr&lt;ExprAST&gt; LHS,
+                std::unique_ptr&lt;ExprAST&gt; RHS)
+      : Op(Op), LHS(std::move(LHS)), RHS(std::move(RHS)) {}
+
+  double eval(const Env &amp;E) const override {
+    double L = LHS-&gt;eval(E);
+    double R = RHS-&gt;eval(E);
+    switch (Op) {
+    case '+': return L + R;
+    case '-': return L - R;
+    case '*': return L * R;
+    case '/': return L / R;
+    case '&lt;': return L &lt; R ? 1.0 : 0.0;
+    default:
+      std::fprintf(stderr, "error: unknown operator '%c'\n", Op);
+      return 0.0;
+    }
+  }
+
+  std::string str() const override {
+    return "(" + LHS-&gt;str() + " " + Op + " " + RHS-&gt;str() + ")";
+  }
+};</code></pre>
+      </details>
+    </div>
+  </article>
+
+  <!-- TASK 01-10-00-700-802 -->
+  <article class="task" id="t-01-10-00-700-802" data-task="01-10-00-700-802" data-week="1" data-title="Build the program with CMake and Ninja" data-time="20 min">
+    <div class="task-head"><span class="tno">TASK 01-10-00-700-802</span><span class="ttl">Build the program with CMake and Ninja</span><span class="time">20 min</span></div>
+    <div class="task-body">
+      <h4>1. General</h4>
+      <p>LLVM and MLIR use CMake to make the build files. Ninja then does the build. This task uses the same tools on <code>expr.cpp</code>.</p>
+      <h4>2. Job set-up information</h4>
+      <table>
+        <thead><tr><th>Tools and equipment</th><th>Referenced information</th></tr></thead>
+        <tbody><tr><td>Ubuntu shell, <code>cmake</code>, <code>ninja</code></td><td>R14</td></tr></tbody>
+      </table>
+      <figure class="fig">
+<pre class="code"><code>cmake_minimum_required(VERSION 3.20)
+project(Week01 LANGUAGES CXX)
+
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+add_executable(expr expr.cpp)
+target_compile_options(expr PRIVATE -Wall -Wextra)</code></pre>
+        <figcaption>Figure 5 · CMakeLists.txt</figcaption>
+      </figure>
+      <h4>3. Procedure</h4>
+      <ol class="steps">
+        <li class="step"><b class="n">(1)</b><div class="body">Go to the work directory:
+<pre class="cmd" data-sh="WSL"><code>cd ~/lab/week-01</code></pre></div></li>
+        <li class="step"><b class="n">(2)</b><div class="body">Make the file <code>CMakeLists.txt</code> with the code from Figure 5.</div></li>
+        <li class="step"><b class="n">(3)</b><div class="body">Make the build files:
+<pre class="cmd" data-sh="WSL"><code>cmake -S . -B build -G Ninja -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_EXPORT_COMPILE_COMMANDS=ON</code></pre></div></li>
+        <li class="step"><b class="n">(4)</b><div class="body">Build the program:
+<pre class="cmd" data-sh="WSL"><code>ninja -C build</code></pre></div></li>
+        <li class="step"><b class="n">(5)</b><div class="body">Run the program:
+<pre class="cmd" data-sh="WSL"><code>./build/expr</code></pre></div></li>
+        <li class="step"><b class="n">(6)</b><div class="body">Make sure that the output is the same as the output of <code>./expr</code>.</div></li>
+        <li class="step"><b class="n">(7)</b><div class="body">Make a link to the compilation database:
+<pre class="cmd" data-sh="WSL"><code>ln -s build/compile_commands.json .</code></pre></div></li>
+        <li class="step"><b class="n">(8)</b><div class="body">In <code>expr.cpp</code>, change the value of <code>x</code>.</div></li>
+        <li class="step"><b class="n">(9)</b><div class="body">Build the program again:
+<pre class="cmd" data-sh="WSL"><code>ninja -C build</code></pre></div></li>
+        <li class="step"><b class="n">(10)</b><div class="body">Make sure that Ninja shows one compile step and one link step only.</div></li>
+      </ol>
+      <div class="note"><span class="nh">NOTE:</span><code>clangd</code> reads <code>compile_commands.json</code>. Then the editor can show errors and complete names. The LLVM and MLIR builds make the same file.</div>
+    </div>
+  </article>

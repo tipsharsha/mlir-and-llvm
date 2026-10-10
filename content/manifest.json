@@ -1,0 +1,61 @@
+{
+  "title": "MLIR and LLVM for the Modular Stack",
+  "tabs": [
+    {
+      "id": "home", "group": "Start", "label": "Home", "sub": "Progress and next step",
+      "chapters": [
+        { "id": "start", "title": "Home", "file": "home/start.html", "hideHeader": true }
+      ]
+    },
+    {
+      "id": "program", "group": "Start", "label": "Program", "sub": "Introduction and schedule",
+      "chapters": [
+        { "id": "introduction", "num": "00-00-00", "title": "Introduction", "file": "program/introduction.html" },
+        { "id": "schedule", "num": "00-10-00", "title": "Program schedule", "file": "program/schedule.html" },
+        { "id": "applicability", "num": "00-15-00", "title": "Applicability and revisions", "file": "program/applicability.html" }
+      ]
+    },
+    {
+      "id": "week-0", "group": "Weeks", "label": "Week 0", "sub": "Set-up and background",
+      "chapters": [
+        { "id": "computer-setup", "num": "00-20-00", "title": "Computer set-up", "file": "week-00/computer-setup.html" },
+        { "id": "overview", "num": "00-30-10", "title": "Reading guide and overview", "file": "week-00/overview.html" },
+        { "id": "primer", "num": "00-30-20", "title": "Primer: ten ideas", "file": "week-00/primer.html" },
+        { "id": "r1-cuda-story", "num": "00-30-30", "title": "R1 · Parts 1 to 4 · The CUDA story", "file": "week-00/r1-cuda-story.html" },
+        { "id": "r1-alternatives", "num": "00-30-40", "title": "R1 · Parts 5 to 8 · Alternatives to CUDA", "file": "week-00/r1-alternatives.html" },
+        { "id": "r1-modular", "num": "00-30-50", "title": "R1 · Parts 9 to 11 · The Modular answer", "file": "week-00/r1-modular.html" },
+        { "id": "r2-llvm-chapter", "num": "00-30-60", "title": "R2 · The LLVM chapter", "file": "week-00/r2-llvm-chapter.html" },
+        { "id": "check", "num": "00-90-00", "title": "Check and record", "file": "week-00/check.html" }
+      ]
+    },
+    {
+      "id": "week-1", "group": "Weeks", "label": "Week 1", "sub": "C++ refresher and LLVM IR",
+      "chapters": [
+        { "id": "introduction", "num": "01-00-00", "title": "Introduction", "file": "week-01/introduction.html" },
+        { "id": "cpp-refresher", "num": "01-10-00", "title": "C++ refresher", "file": "week-01/cpp-refresher.html" },
+        { "id": "llvm-ir", "num": "01-20-00", "title": "LLVM IR from the command line", "file": "week-01/llvm-ir.html" },
+        { "id": "check", "num": "01-90-00", "title": "Check and record", "file": "week-01/check.html" }
+      ]
+    },
+    { "id": "week-2", "group": "Weeks", "label": "Week 2", "sub": "Kaleidoscope: front end", "planned": true },
+    { "id": "week-3", "group": "Weeks", "label": "Week 3", "sub": "Kaleidoscope: JIT and passes", "planned": true },
+    { "id": "week-4", "group": "Weeks", "label": "Week 4", "sub": "MLIR build and Toy basics", "planned": true },
+    { "id": "week-5", "group": "Weeks", "label": "Week 5", "sub": "Rewrite patterns", "planned": true },
+    { "id": "week-6", "group": "Weeks", "label": "Week 6", "sub": "Lowering to LLVM", "planned": true },
+    { "id": "week-7", "group": "Weeks", "label": "Week 7", "sub": "Mojo basics", "planned": true },
+    { "id": "week-8", "group": "Weeks", "label": "Week 8", "sub": "Parameters and SIMD", "planned": true },
+    { "id": "week-9", "group": "Weeks", "label": "Week 9", "sub": "Matmul on the CPU", "planned": true },
+    { "id": "week-10", "group": "Weeks", "label": "Week 10", "sub": "GPU fundamentals", "planned": true },
+    { "id": "week-11", "group": "Weeks", "label": "Week 11", "sub": "GPU kernels on the RTX 5060", "planned": true },
+    { "id": "week-12", "group": "Weeks", "label": "Week 12", "sub": "MAX", "planned": true },
+    { "id": "week-13", "group": "Weeks", "label": "Week 13+", "sub": "Final project", "planned": true },
+    {
+      "id": "reference", "group": "Reference", "label": "Reference", "sub": "Sessions, glossary, sources",
+      "chapters": [
+        { "id": "sessions", "num": "REF-10", "title": "Session preparation", "file": "reference/sessions.html" },
+        { "id": "glossary", "num": "REF-20", "title": "Glossary", "file": "reference/glossary.html" },
+        { "id": "references", "num": "REF-30", "title": "List of references", "file": "reference/references.html" }
+      ]
+    }
+  ]
+}

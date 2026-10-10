@@ -1,0 +1,283 @@
+<p>This section uses C, not C++. The tools are <code>clang</code> and <code>opt</code>.</p>
+  <p><code>clang</code> makes LLVM IR from C source code. <code>opt</code> applies passes to LLVM IR and writes the result. Figure 6 shows the files and the tools.</p>
+
+  <figure class="fig">
+    <svg viewBox="0 0 700 146" role="img" aria-labelledby="f6t">
+      <title id="f6t">Files and tools in Section 01-20-00</title>
+      <defs>
+        <marker id="ar6" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+          <path d="M0,0 L10,5 L0,10 z" fill="#161616"/>
+        </marker>
+      </defs>
+      <g font-family="B612 Mono, Consolas, monospace" fill="#161616">
+        <g stroke="#161616" stroke-width="1.5" fill="#fff">
+          <rect x="10" y="16" width="96" height="36"/>
+          <rect x="236" y="16" width="100" height="36"/>
+          <rect x="476" y="16" width="160" height="36"/>
+          <rect x="236" y="100" width="100" height="36"/>
+          <rect x="476" y="100" width="160" height="36"/>
+        </g>
+        <g stroke="#161616" stroke-width="1.5" marker-end="url(#ar6)">
+          <line x1="106" y1="34" x2="235" y2="34"/>
+          <line x1="336" y1="34" x2="475" y2="34"/>
+          <line x1="286" y1="52" x2="286" y2="99"/>
+          <line x1="556" y1="52" x2="556" y2="99"/>
+        </g>
+        <g text-anchor="middle" font-size="12.5" font-weight="700">
+          <text x="58" y="38">sum.c</text>
+          <text x="286" y="38">sum.ll</text>
+          <text x="556" y="38">sum.mem2reg.ll</text>
+          <text x="286" y="122">sum.O2.ll</text>
+          <text x="556" y="122">sum-cfg.svg</text>
+        </g>
+        <g font-size="10.5" fill="#0369a1">
+          <text x="171" y="27" text-anchor="middle">clang -O0 -emit-llvm</text>
+          <text x="406" y="27" text-anchor="middle">opt mem2reg</text>
+          <text x="296" y="80">opt default&lt;O2&gt;</text>
+          <text x="566" y="80">opt dot-cfg + dot</text>
+        </g>
+      </g>
+    </svg>
+    <figcaption>Figure 6 · Files and tools in Section 01-20-00</figcaption>
+  </figure>
+
+  <!-- TASK 01-20-00-200-801 -->
+  <article class="task" id="t-01-20-00-200-801" data-task="01-20-00-200-801" data-week="1" data-title="Study the structure of LLVM IR" data-time="60 min">
+    <div class="task-head"><span class="tno">TASK 01-20-00-200-801</span><span class="ttl">Study the structure of LLVM IR</span><span class="time">60 min</span></div>
+    <div class="task-body">
+      <h4>1. General</h4>
+      <p>LLVM IR is the code representation in the middle of LLVM. Mojo code also becomes LLVM IR before it becomes machine code.</p>
+      <p>Table 7 gives the important terms. Figure 7 shows a function in LLVM IR.</p>
+      <h4>2. Job set-up information</h4>
+      <table>
+        <thead><tr><th>Tools and equipment</th><th>Referenced information</th></tr></thead>
+        <tbody><tr><td>Web browser</td><td>R9, R10, R13 (optional)</td></tr></tbody>
+      </table>
+      <table>
+        <caption>Table 7 · LLVM IR terms</caption>
+        <thead><tr><th>Term</th><th>Definition</th></tr></thead>
+        <tbody>
+          <tr><td>Module</td><td>The top-level unit of LLVM IR. It contains global variables and functions. One source file usually gives one module.</td></tr>
+          <tr><td>Function</td><td>A list of basic blocks. The first block is the entry block.</td></tr>
+          <tr><td>Basic block</td><td>A sequence of instructions with one entry point. Only the last instruction can change the control flow.</td></tr>
+          <tr><td>Terminator</td><td>The last instruction of a basic block, for example <code>br</code> or <code>ret</code>.</td></tr>
+          <tr><td>Control flow graph (CFG)</td><td>The graph of the basic blocks of a function. Each edge is a possible jump from one block to a different block.</td></tr>
+          <tr><td>SSA form</td><td>Static single assignment. Each value has exactly one definition. A value does not change after its definition.</td></tr>
+          <tr><td>Phi node</td><td>An instruction at the start of a block. It selects a value that agrees with the previous block.</td></tr>
+          <tr><td>Virtual register</td><td>A name such as <code>%add</code>. LLVM IR has no limit on their number. The back end assigns real registers.</td></tr>
+          <tr><td>Dominance</td><td>Block A dominates block B when each path from the entry block to block B goes through block A.</td></tr>
+          <tr><td>Pass</td><td>A unit of work that examines or changes the IR, for example <code>mem2reg</code>.</td></tr>
+        </tbody>
+      </table>
+
+      <figure class="fig">
+<pre class="code nocopy"><code>define dso_local i32 @sum(i32 noundef %n) #0 {        <span class="co">1</span>
+entry:                                                 <span class="co">2</span>
+  br label %for.cond
+
+for.cond:                                         ; preds = %for.inc, %entry
+  %s.0 = phi i32 [ 0, %entry ], [ %add, %for.inc ]     <span class="co">3</span>
+  %i.0 = phi i32 [ 0, %entry ], [ %inc, %for.inc ]
+  %cmp = icmp slt i32 %i.0, %n                         <span class="co">4</span>
+  br i1 %cmp, label %for.body, label %for.end          <span class="co">5</span>
+
+for.body:                                         ; preds = %for.cond
+  %add = add nsw i32 %s.0, %i.0                        <span class="co">6</span>
+  br label %for.inc
+
+for.inc:                                          ; preds = %for.body
+  %inc = add nsw i32 %i.0, 1
+  br label %for.cond                                   <span class="co">7</span>
+
+for.end:                                          ; preds = %for.cond
+  ret i32 %s.0                                         <span class="co">8</span>
+}</code></pre>
+        <table class="key">
+          <thead><tr><th>Item</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td>1</td><td>The function definition. <code>%n</code> is the argument. <code>#0</code> refers to a group of attributes.</td></tr>
+            <tr><td>2</td><td>The entry block. The control starts here.</td></tr>
+            <tr><td>3</td><td>Phi nodes. <code>%s.0</code> is 0 when the control comes from <code>entry</code>. It is <code>%add</code> when the control comes from <code>for.inc</code>.</td></tr>
+            <tr><td>4</td><td>A compare instruction. <code>slt</code> means “signed less than”.</td></tr>
+            <tr><td>5</td><td>A conditional branch. This terminator goes to <code>for.body</code> or to <code>for.end</code>.</td></tr>
+            <tr><td>6</td><td>The loop body. <code>nsw</code> (no signed wrap) tells LLVM that a signed overflow does not occur.</td></tr>
+            <tr><td>7</td><td>The back edge. This branch goes back to the loop header. Thus, the blocks make a loop.</td></tr>
+            <tr><td>8</td><td>The return. <code>%s.0</code> is the value of <code>s</code> when the loop stops.</td></tr>
+          </tbody>
+        </table>
+        <figcaption>Figure 7 · The function sum in LLVM IR, after mem2reg (typical result)</figcaption>
+      </figure>
+      <div class="note"><span class="nh">NOTE:</span>On your computer, the names and the sequence of some lines can be different from Figure 7.</div>
+
+      <h4>3. Procedure</h4>
+      <ol class="steps">
+        <li class="step"><b class="n">(1)</b><div class="body">Read R9, “LLVM for Grad Students”.</div></li>
+        <li class="step"><b class="n">(2)</b><div class="body">Read the terms in Table 7.</div></li>
+        <li class="step"><b class="n">(3)</b><div class="body">Examine Figure 7. Find each item of the key in the code.</div></li>
+        <li class="step"><b class="n">(4)</b><div class="body">In R10, read the entries for the instructions <code>phi</code>, <code>br</code>, <code>icmp</code>, <code>alloca</code>, <code>load</code> and <code>store</code>.</div></li>
+        <li class="step opt"><b class="n">(5)</b><div class="body"><span class="tag">OPTIONAL</span>In R13, write the code of Figure 8. Select an x86-64 clang compiler. Add the options <code>-O1 -emit-llvm</code>.</div></li>
+      </ol>
+    </div>
+  </article>
+
+  <!-- TASK 01-20-00-700-801 -->
+  <article class="task" id="t-01-20-00-700-801" data-task="01-20-00-700-801" data-week="1" data-title="Make LLVM IR from C source code" data-time="30 min">
+    <div class="task-head"><span class="tno">TASK 01-20-00-700-801</span><span class="ttl">Make LLVM IR from C source code</span><span class="time">30 min</span></div>
+    <div class="task-body">
+      <h4>1. General</h4>
+      <p>Clang can stop after it makes LLVM IR. At <code>-O0</code>, Clang keeps each local variable in memory with <code>alloca</code>, <code>load</code> and <code>store</code>.</p>
+      <p>This keeps the front end simple. Later passes change these memory operations into SSA values.</p>
+      <h4>2. Job set-up information</h4>
+      <table>
+        <thead><tr><th>Tools and equipment</th><th>Referenced information</th></tr></thead>
+        <tbody><tr><td>Ubuntu shell, <code>clang</code>, a text editor</td><td>R10</td></tr></tbody>
+      </table>
+      <figure class="fig">
+<pre class="code"><code>// sum.c - Week 1: a simple loop.
+int sum(int n) {
+  int s = 0;
+  for (int i = 0; i &lt; n; i++)
+    s += i;
+  return s;
+}</code></pre>
+        <figcaption>Figure 8 · sum.c</figcaption>
+      </figure>
+      <h4>3. Procedure</h4>
+      <ol class="steps">
+        <li class="step"><b class="n">(1)</b><div class="body">Go to the work directory:
+<pre class="cmd" data-sh="WSL"><code>cd ~/lab/week-01</code></pre></div></li>
+        <li class="step"><b class="n">(2)</b><div class="body">Make the file <code>sum.c</code> with the code from Figure 8.</div></li>
+        <li class="step"><b class="n">(3)</b><div class="body">Make the LLVM IR:
+<pre class="cmd" data-sh="WSL"><code>clang -O0 -Xclang -disable-O0-optnone -fno-discard-value-names -S -emit-llvm sum.c -o sum.ll</code></pre>
+          <div class="note"><span class="nh">NOTE:</span><code>-disable-O0-optnone</code> removes the <code>optnone</code> attribute. Without this option, <code>opt</code> does not change <code>-O0</code> functions. <code>-fno-discard-value-names</code> keeps the variable names in the IR.</div></div></li>
+        <li class="step"><b class="n">(4)</b><div class="body">Open <code>sum.ll</code> in your editor.</div></li>
+        <li class="step"><b class="n">(5)</b><div class="body">Find the definition of the function <code>@sum</code>.</div></li>
+        <li class="step"><b class="n">(6)</b><div class="body">Find the <code>alloca</code> instructions in the entry block. Record the names of the three variables.</div></li>
+        <li class="step"><b class="n">(7)</b><div class="body">Find the <code>load</code> and <code>store</code> instructions in the loop.</div></li>
+        <li class="step"><b class="n">(8)</b><div class="body">Count the basic blocks in <code>@sum</code>. Record the number.</div></li>
+        <li class="step"><b class="n">(9)</b><div class="body">Count the lines that contain <code>optnone</code>:
+<pre class="cmd" data-sh="WSL"><code>grep -c optnone sum.ll</code></pre></div></li>
+        <li class="step"><b class="n">(10)</b><div class="body">Make sure that the command shows <code>0</code>.</div></li>
+      </ol>
+    </div>
+  </article>
+
+  <!-- TASK 01-20-00-700-802 -->
+  <article class="task" id="t-01-20-00-700-802" data-task="01-20-00-700-802" data-week="1" data-title="Apply the mem2reg pass and show the CFG" data-time="30 min">
+    <div class="task-head"><span class="tno">TASK 01-20-00-700-802</span><span class="ttl">Apply the mem2reg pass and show the CFG</span><span class="time">30 min</span></div>
+    <div class="task-body">
+      <h4>1. General</h4>
+      <p>The <code>mem2reg</code> pass changes local variables in memory into SSA values. It adds phi nodes where control paths join.</p>
+      <p>The <code>dot-cfg</code> pass writes the CFG of each function to a Graphviz file.</p>
+      <h4>2. Job set-up information</h4>
+      <table>
+        <thead><tr><th>Tools and equipment</th><th>Referenced information</th></tr></thead>
+        <tbody><tr><td>Ubuntu shell, <code>opt</code>, <code>dot</code>, a web browser</td><td>R11</td></tr></tbody>
+      </table>
+      <h4>3. Procedure</h4>
+      <ol class="steps">
+        <li class="step"><b class="n">(1)</b><div class="body">Apply the <code>mem2reg</code> pass:
+<pre class="cmd" data-sh="WSL"><code>opt -passes=mem2reg -S sum.ll -o sum.mem2reg.ll</code></pre></div></li>
+        <li class="step"><b class="n">(2)</b><div class="body">Compare the two files:
+<pre class="cmd" data-sh="WSL"><code>diff -u sum.ll sum.mem2reg.ll | less</code></pre></div></li>
+        <li class="step"><b class="n">(3)</b><div class="body">Count the memory instructions in the new file:
+<pre class="cmd" data-sh="WSL"><code>grep -cE 'alloca|load|store' sum.mem2reg.ll</code></pre></div></li>
+        <li class="step"><b class="n">(4)</b><div class="body">Make sure that the command shows <code>0</code>.</div></li>
+        <li class="step"><b class="n">(5)</b><div class="body">Find the phi nodes in the block <code>for.cond</code>. Compare them with Figure 7.</div></li>
+        <li class="step"><b class="n">(6)</b><div class="body">Write the CFG file:
+<pre class="cmd" data-sh="WSL"><code>opt -passes=dot-cfg -disable-output sum.mem2reg.ll</code></pre></div></li>
+        <li class="step"><b class="n">(7)</b><div class="body">Make sure that the file <code>.sum.dot</code> is in the directory:
+<pre class="cmd" data-sh="WSL"><code>ls -a</code></pre>
+          <div class="note"><span class="nh">NOTE:</span>The file name starts with a period. Thus, <code>ls</code> without <code>-a</code> does not show it.</div></div></li>
+        <li class="step"><b class="n">(8)</b><div class="body">Make an SVG drawing of the CFG:
+<pre class="cmd" data-sh="WSL"><code>dot -Tsvg .sum.dot -o sum-cfg.svg</code></pre></div></li>
+        <li class="step"><b class="n">(9)</b><div class="body">Open the directory in Windows Explorer:
+<pre class="cmd" data-sh="WSL"><code>explorer.exe .</code></pre></div></li>
+        <li class="step"><b class="n">(10)</b><div class="body">Open <code>sum-cfg.svg</code> in a web browser.</div></li>
+        <li class="step"><b class="n">(11)</b><div class="body">Find the edge from <code>for.inc</code> back to <code>for.cond</code>. This back edge makes the loop.</div></li>
+      </ol>
+    </div>
+  </article>
+
+  <!-- TASK 01-20-00-700-803 -->
+  <article class="task" id="t-01-20-00-700-803" data-task="01-20-00-700-803" data-week="1" data-title="Apply the -O2 pipeline and find the vectorized loop" data-time="60 min">
+    <div class="task-head"><span class="tno">TASK 01-20-00-700-803</span><span class="ttl">Apply the -O2 pipeline and find the vectorized loop</span><span class="time">60 min</span></div>
+    <div class="task-body">
+      <h4>1. General</h4>
+      <p><code>-O2</code> is a pipeline of many passes. In this task, you examine the pipeline.</p>
+      <p>Then you examine two results. LLVM removes the loop in <code>sum</code>. LLVM vectorizes the loop in <code>dot</code>.</p>
+      <h4>2. Job set-up information</h4>
+      <table>
+        <thead><tr><th>Tools and equipment</th><th>Referenced information</th></tr></thead>
+        <tbody><tr><td>Ubuntu shell, <code>clang</code>, <code>opt</code>, <code>dot</code></td><td>R11, R12</td></tr></tbody>
+      </table>
+      <figure class="fig">
+<pre class="code"><code>// dot.c - Week 1: dot product of two int arrays.
+int dot(const int *a, const int *b, int n) {
+  int s = 0;
+  for (int i = 0; i &lt; n; i++)
+    s += a[i] * b[i];
+  return s;
+}</code></pre>
+<pre class="code"><code>// dotf.c - Week 1: dot product of two float arrays.
+float dotf(const float *a, const float *b, int n) {
+  float s = 0.0f;
+  for (int i = 0; i &lt; n; i++)
+    s += a[i] * b[i];
+  return s;
+}</code></pre>
+        <figcaption>Figure 9 · dot.c and dotf.c</figcaption>
+      </figure>
+      <h4>3. Procedure</h4>
+      <div class="subtask">SUBTASK 01-20-00-700-001<span>Examine the -O2 pipeline</span></div>
+      <ol class="steps">
+        <li class="step"><b class="n">(1)</b><div class="body">Show the important passes of the <code>-O2</code> pipeline:
+<pre class="cmd" data-sh="WSL"><code>opt -passes='default&lt;O2&gt;' -print-pipeline-passes -disable-output sum.ll | tr ',' '\n' | grep -E 'inline|instcombine|licm|loop-vectorize'</code></pre></div></li>
+        <li class="step"><b class="n">(2)</b><div class="body">Make sure that the list contains <code>inline</code>, <code>instcombine</code>, <code>licm</code> and <code>loop-vectorize</code>.
+          <div class="note"><span class="nh">NOTE:</span>Some pass names have options in angle brackets after the name.</div></div></li>
+        <li class="step opt"><b class="n">(3)</b><div class="body"><span class="tag">OPTIONAL</span>Show each change that the pipeline makes. Find the first pass that changes <code>@sum</code>.
+<pre class="cmd" data-sh="WSL"><code>opt -passes='default&lt;O2&gt;' -print-changed -disable-output sum.ll 2&gt;&amp;1 | less</code></pre></div></li>
+      </ol>
+      <div class="subtask">SUBTASK 01-20-00-700-002<span>Optimize the loop in sum</span></div>
+      <ol class="steps">
+        <li class="step"><b class="n">(4)</b><div class="body">Apply the <code>-O2</code> pipeline:
+<pre class="cmd" data-sh="WSL"><code>opt -passes='default&lt;O2&gt;' -S sum.ll -o sum.O2.ll</code></pre></div></li>
+        <li class="step"><b class="n">(5)</b><div class="body">Find the function <code>@sum</code> in <code>sum.O2.ll</code>.</div></li>
+        <li class="step"><b class="n">(6)</b><div class="body">Find the <code>mul</code> instruction. LLVM changed the loop into a formula for the sum.</div></li>
+        <li class="step"><b class="n">(7)</b><div class="body">Write the CFG file again:
+<pre class="cmd" data-sh="WSL"><code>opt -passes=dot-cfg -disable-output sum.O2.ll</code></pre></div></li>
+        <li class="step"><b class="n">(8)</b><div class="body">Make the SVG drawing:
+<pre class="cmd" data-sh="WSL"><code>dot -Tsvg .sum.dot -o sum-O2-cfg.svg</code></pre></div></li>
+        <li class="step"><b class="n">(9)</b><div class="body">Open <code>sum-O2-cfg.svg</code> in a web browser.</div></li>
+        <li class="step"><b class="n">(10)</b><div class="body">Make sure that the drawing has no back edge.</div></li>
+      </ol>
+      <div class="note"><span class="nh">NOTE:</span>The scalar evolution analysis (SCEV) calculated the value of <code>s</code> at the end of the loop. Thus, LLVM did not need the loop.</div>
+      <div class="subtask">SUBTASK 01-20-00-700-003<span>Find the vectorized loop</span></div>
+      <ol class="steps">
+        <li class="step"><b class="n">(11)</b><div class="body">Make the file <code>dot.c</code> with the code from Figure 9.</div></li>
+        <li class="step"><b class="n">(12)</b><div class="body">Make the LLVM IR:
+<pre class="cmd" data-sh="WSL"><code>clang -O0 -Xclang -disable-O0-optnone -fno-discard-value-names -S -emit-llvm dot.c -o dot.ll</code></pre></div></li>
+        <li class="step"><b class="n">(13)</b><div class="body">Apply the <code>-O2</code> pipeline and show the vectorizer remarks:
+<pre class="cmd" data-sh="WSL"><code>opt -passes='default&lt;O2&gt;' -pass-remarks=loop-vectorize -S dot.ll -o dot.O2.ll</code></pre></div></li>
+        <li class="step"><b class="n">(14)</b><div class="body">Make sure that a remark contains <code>vectorized loop</code>. Record the vectorization width and the interleaved count.</div></li>
+        <li class="step"><b class="n">(15)</b><div class="body">Show the vector types in the result:
+<pre class="cmd" data-sh="WSL"><code>grep -oE '&lt;[0-9]+ x i32&gt;' dot.O2.ll | sort | uniq -c</code></pre></div></li>
+        <li class="step"><b class="n">(16)</b><div class="body">Find the call to <code>llvm.vector.reduce.add</code>. This call adds the vector lanes after the loop.</div></li>
+      </ol>
+      <div class="subtask">SUBTASK 01-20-00-700-004<span>Change int to float</span></div>
+      <ol class="steps">
+        <li class="step"><b class="n">(17)</b><div class="body">Make the file <code>dotf.c</code> with the code from Figure 9.</div></li>
+        <li class="step"><b class="n">(18)</b><div class="body">Make the LLVM IR:
+<pre class="cmd" data-sh="WSL"><code>clang -O0 -Xclang -disable-O0-optnone -fno-discard-value-names -S -emit-llvm dotf.c -o dotf.ll</code></pre></div></li>
+        <li class="step"><b class="n">(19)</b><div class="body">Apply the <code>-O2</code> pipeline and show the missed remarks:
+<pre class="cmd" data-sh="WSL"><code>opt -passes='default&lt;O2&gt;' -pass-remarks-missed=loop-vectorize -pass-remarks-analysis=loop-vectorize -disable-output dotf.ll</code></pre></div></li>
+        <li class="step"><b class="n">(20)</b><div class="body">Find the remark that starts with <code>loop not vectorized</code>. Record the reason.</div></li>
+        <li class="step"><b class="n">(21)</b><div class="body">Make the LLVM IR again with <code>-ffast-math</code>:
+<pre class="cmd" data-sh="WSL"><code>clang -O0 -Xclang -disable-O0-optnone -fno-discard-value-names -ffast-math -S -emit-llvm dotf.c -o dotf-fast.ll</code></pre></div></li>
+        <li class="step"><b class="n">(22)</b><div class="body">Apply the <code>-O2</code> pipeline and show the vectorizer remarks:
+<pre class="cmd" data-sh="WSL"><code>opt -passes='default&lt;O2&gt;' -pass-remarks=loop-vectorize -disable-output dotf-fast.ll</code></pre></div></li>
+        <li class="step"><b class="n">(23)</b><div class="body">Make sure that a remark contains <code>vectorized loop</code>.</div></li>
+      </ol>
+      <div class="note"><span class="nh">NOTE:</span>Floating-point addition is not associative. A different sequence of additions can give a slightly different result. <code>-ffast-math</code> permits the compiler to change the sequence. GPU kernels for AI must also make this decision.</div>
+    </div>
+  </article>

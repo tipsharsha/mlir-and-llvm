@@ -1,0 +1,1602 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TM-MLIR-001 · Training Manual · MLIR and LLVM for the Modular Stack</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=B612:wght@400;700&family=B612+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --ink: #161616;
+  --ink2: #4a4a4a;
+  --paper: #fdfdfb;
+  --desk: #d6d9dc;
+  --line: #1d1d1d;
+  --fill: #eceeef;
+  --accent: #0369a1;
+  --warn: #b3001b;
+  --warnbg: #fff4f5;
+  --caut: #8a5300;
+  --cautbg: #fff8e6;
+  --ok: #1d6b35;
+  --okbg: #eaf6ee;
+  --mono: "B612 Mono", Consolas, "Courier New", monospace;
+}
+* { box-sizing: border-box; }
+html { scroll-padding-top: 64px; }
+body {
+  margin: 0;
+  background: var(--desk);
+  color: var(--ink);
+  font: 15px/1.5 "B612", Arial, Helvetica, sans-serif;
+}
+code, pre, .mono { font-family: var(--mono); }
+code { font-size: .92em; }
+a { color: var(--accent); }
+
+/* Running header */
+.runhead {
+  position: sticky; top: 0; z-index: 10;
+  background: #121212; color: #f2f2f2;
+  font-size: 11.5px; letter-spacing: .07em; text-transform: uppercase;
+}
+.runhead .row {
+  display: grid; grid-template-columns: 1fr auto 1fr; gap: 16px;
+  padding: 7px 18px; align-items: center;
+}
+.runhead .mid { font-weight: 700; text-align: center; }
+.runhead .right { text-align: right; font-family: var(--mono); }
+.progress { height: 4px; background: #333; }
+.progress > i { display: block; height: 100%; width: 0; background: #38bdf8; transition: width .3s; }
+
+/* Sheet */
+.sheet {
+  max-width: 980px; margin: 28px auto; background: var(--paper);
+  border: 1px solid #9aa0a6; box-shadow: 0 2px 12px rgba(0,0,0,.14);
+  padding: 40px 56px 56px;
+}
+
+/* Title page */
+.titlepage { border: 3px double var(--line); padding: 34px 38px 28px; }
+.titlepage .top { display: flex; justify-content: space-between; align-items: flex-start; }
+.titlepage .top img { width: 56px; height: 56px; }
+.titlepage .docno { font-family: var(--mono); font-size: 13px; text-align: right; line-height: 1.6; }
+.titlepage .kind { margin-top: 38px; font-size: 14px; letter-spacing: .32em; font-weight: 700; }
+.titlepage h1 { font-size: 34px; line-height: 1.15; margin: 6px 0 10px; letter-spacing: .02em; text-transform: uppercase; }
+.titlepage .sub { font-size: 16px; color: var(--ink2); margin-bottom: 26px; }
+.titlepage .contains { border-top: 1.5px solid var(--line); padding-top: 12px; font-size: 13.5px; }
+
+/* Chapters */
+.chapter { margin-top: 58px; border-top: 3px solid var(--line); padding-top: 8px; }
+.chapter > header { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; }
+.chapter > header .num { font-family: var(--mono); font-size: 13px; font-weight: 700; }
+.chapter > header .wk { font-size: 11.5px; letter-spacing: .1em; text-transform: uppercase; color: var(--ink2); }
+h2 { font-size: 22px; letter-spacing: .04em; margin: 6px 0 16px; text-transform: uppercase; }
+h3 { font-size: 15px; letter-spacing: .05em; text-transform: uppercase; margin: 26px 0 8px; }
+p { margin: 8px 0; }
+
+/* Tables */
+table { border-collapse: collapse; width: 100%; font-size: 13.5px; margin: 8px 0 12px; }
+th, td { border: 1px solid #7a7a7a; padding: 5px 8px; text-align: left; vertical-align: top; }
+th { background: var(--fill); text-transform: uppercase; font-size: 11.5px; letter-spacing: .05em; }
+caption { caption-side: top; text-align: left; font-weight: 700; font-size: 12.5px; text-transform: uppercase; letter-spacing: .05em; padding-bottom: 4px; }
+td.c, th.c { text-align: center; }
+tr.now td { background: #eef6fb; }
+tr.ok td { background: var(--okbg); }
+
+.badge { display: inline-block; font-size: 10.5px; letter-spacing: .08em; text-transform: uppercase; padding: 1px 6px; border: 1px solid #777; white-space: nowrap; }
+.badge.now { background: var(--accent); border-color: var(--accent); color: #fff; }
+.badge.later { border-style: dashed; color: var(--ink2); }
+
+/* Tasks */
+.task { border: 1.5px solid var(--line); margin: 28px 0; background: #fff; }
+.task-head {
+  display: grid; grid-template-columns: auto 1fr auto; gap: 14px; align-items: center;
+  background: var(--fill); border-bottom: 1.5px solid var(--line); padding: 8px 14px;
+}
+.task-head .tno { font-family: var(--mono); font-weight: 700; font-size: 12.5px; white-space: nowrap; }
+.task-head .ttl { font-weight: 700; text-transform: uppercase; font-size: 14.5px; letter-spacing: .02em; }
+.task-head .time { font-size: 11.5px; border: 1px solid var(--line); padding: 2px 8px; background: #fff; white-space: nowrap; }
+.task-body { padding: 4px 18px 14px; }
+.task h4 { font-size: 12.5px; text-transform: uppercase; letter-spacing: .07em; margin: 18px 0 6px; }
+.subtask { font-family: var(--mono); font-size: 12px; font-weight: 700; margin: 18px 0 4px; padding-bottom: 3px; border-bottom: 1px dashed #888; }
+.subtask span { font-family: "B612", Arial, sans-serif; font-weight: 700; margin-left: 10px; text-transform: uppercase; }
+
+ol.steps { list-style: none; margin: 0; padding: 0; }
+li.step { display: grid; grid-template-columns: 24px 42px minmax(0, 1fr); gap: 2px; padding: 5px 0; align-items: start; }
+li.step > input { margin: 4px 0 0; width: 16px; height: 16px; accent-color: var(--ok); cursor: pointer; }
+li.step .n { font-weight: 700; padding-top: 1px; }
+li.step .body { min-width: 0; }
+li.step.done .n { color: var(--ok); }
+li.step.done .body { color: #5b5b5b; }
+.tag { display: inline-block; font-size: 10px; letter-spacing: .09em; border: 1px solid #888; padding: 0 5px; margin-right: 6px; color: var(--ink2); vertical-align: 1px; }
+
+.signoff {
+  border-top: 1.5px solid var(--line); display: flex; justify-content: space-between; gap: 12px;
+  padding: 7px 14px; font-size: 11.5px; text-transform: uppercase; letter-spacing: .06em; background: #fafafa;
+}
+.signoff.complete { background: var(--okbg); color: var(--ok); font-weight: 700; }
+
+/* Warnings, cautions, notes */
+.warning, .caution { border: 2px solid; margin: 12px 0; padding: 8px 16px 10px; }
+.warning { border-color: var(--warn); background: var(--warnbg); }
+.caution { border-color: var(--caut); background: var(--cautbg); }
+.warning .wh, .caution .wh { text-align: center; font-weight: 700; letter-spacing: .28em; margin-bottom: 4px; }
+.warning .wh { color: var(--warn); }
+.caution .wh { color: var(--caut); }
+.warning p, .caution p { margin: 4px 0; }
+.note { margin: 8px 0; padding: 3px 0 3px 12px; border-left: 3px solid #9aa0a6; }
+.note .nh { font-weight: 700; letter-spacing: .08em; margin-right: 6px; }
+
+/* Code */
+pre {
+  position: relative; background: #f3f4f5; border: 1px solid #c4c7ca;
+  padding: 10px 12px; margin: 6px 0; overflow-x: auto;
+  font-size: 12.8px; line-height: 1.5;
+}
+pre.cmd { padding-top: 22px; }
+pre.cmd::before {
+  content: attr(data-sh); position: absolute; top: 0; left: 0;
+  font: 700 9.5px/1 "B612", Arial, sans-serif; letter-spacing: .1em;
+  background: #222; color: #fff; padding: 3px 7px;
+}
+pre.cmd[data-sh="PS"]::before { background: #1e3a8a; }
+pre.code { background: #fbfbf8; }
+.copy {
+  position: absolute; top: 4px; right: 4px;
+  font: 700 9.5px/1 "B612", Arial, sans-serif; letter-spacing: .08em; text-transform: uppercase;
+  background: #fff; border: 1px solid #888; padding: 4px 7px; cursor: pointer; color: var(--ink);
+}
+.copy:hover { background: var(--fill); }
+.co {
+  display: inline-block; width: 18px; height: 18px; border-radius: 50%;
+  border: 1.5px solid var(--accent); color: var(--accent); background: #fff;
+  font: 700 10px/15px "B612", Arial, sans-serif; text-align: center; margin-left: 8px; vertical-align: 1px;
+}
+
+/* Figures */
+figure.fig { border: 1px solid #7a7a7a; margin: 18px 0; padding: 14px 16px 10px; background: #fff; }
+figure.fig svg { display: block; width: 100%; height: auto; }
+figcaption { text-align: center; font-weight: 700; text-transform: uppercase; font-size: 12px; letter-spacing: .06em; margin-top: 10px; }
+.key { font-size: 13px; }
+.key td:first-child { width: 44px; text-align: center; font-weight: 700; }
+
+/* Questions */
+details.q { border: 1px solid #9a9a9a; margin: 6px 0; background: #fff; }
+details.q summary { cursor: pointer; padding: 6px 10px; font-weight: 700; }
+details.q summary .qn { font-family: var(--mono); margin-right: 8px; }
+details.q .a { padding: 6px 14px 10px; border-top: 1px dashed #9a9a9a; background: #f7faf7; }
+details.solution { border: 1px solid #9a9a9a; margin: 12px 0; }
+details.solution summary { cursor: pointer; padding: 6px 10px; font-weight: 700; text-transform: uppercase; font-size: 12.5px; letter-spacing: .05em; background: var(--fill); }
+details.solution pre { margin: 0; border: 0; border-top: 1px solid #c4c7ca; }
+
+.toc { columns: 2; column-gap: 32px; font-size: 13.5px; padding-left: 0; list-style: none; }
+.toc li { break-inside: avoid; padding: 2px 0; }
+.toc .mono { display: inline-block; width: 74px; font-size: 12px; }
+.btn {
+  font: 700 11px/1 "B612", Arial, sans-serif; letter-spacing: .08em; text-transform: uppercase;
+  background: #fff; border: 1.5px solid var(--line); padding: 7px 12px; cursor: pointer;
+}
+.btn:hover { background: var(--fill); }
+.next { border: 1.5px dashed #777; padding: 10px 14px; margin-top: 18px; font-size: 13.5px; }
+.end { text-align: center; margin-top: 48px; font-weight: 700; letter-spacing: .2em; font-size: 12px; }
+
+@media (max-width: 760px) {
+  .sheet { padding: 20px 16px 32px; margin: 0; }
+  .titlepage { padding: 22px 18px; }
+  .runhead .row { grid-template-columns: 1fr; }
+  .runhead .left, .runhead .right { display: none; }
+  .task-head { grid-template-columns: 1fr; gap: 4px; }
+  li.step { grid-template-columns: 22px 36px minmax(0, 1fr); }
+  .toc { columns: 1; }
+}
+@media print {
+  @page { size: A4; margin: 14mm; }
+  body { background: #fff; font-size: 11pt; }
+  .runhead, .copy, .noprint { display: none !important; }
+  .sheet { box-shadow: none; border: 0; margin: 0; padding: 0; max-width: none; }
+  .chapter { break-before: page; }
+  pre { white-space: pre-wrap; }
+  a { color: inherit; text-decoration: none; }
+}
+</style>
+</head>
+<body>
+
+<div class="runhead">
+  <div class="row">
+    <div class="left">Training Manual · MLIR and LLVM</div>
+    <div class="mid" id="runhead-section">Front matter</div>
+    <div class="right">TM-MLIR-001 · Rev 1 · <span id="progress-label">0 / 0 steps</span></div>
+  </div>
+  <div class="progress"><i id="progress-bar"></i></div>
+</div>
+
+<main class="sheet">
+
+<!-- ============================================================ TITLE -->
+<section class="titlepage" data-section="Front matter">
+  <div class="top">
+    <img src="../../assets/icon.svg" alt="">
+    <div class="docno">TM-MLIR-001<br>Issue 1 · Revision 1<br>2026-10-10</div>
+  </div>
+  <div class="kind">TRAINING MANUAL</div>
+  <h1>MLIR and LLVM for the Modular Stack</h1>
+  <div class="sub">Preparation for the Chris Lattner sessions about Mojo and MAX</div>
+  <div class="contains">
+    <p><b>THIS ISSUE CONTAINS:</b> the introduction, the program schedule, Week 0 (set-up and background) and Week 1 (C++ refresher and LLVM IR).</p>
+    <p><b>LANGUAGE STANDARD:</b> ASD-STE100 Simplified Technical English.</p>
+  </div>
+</section>
+
+<h3>Record of revisions</h3>
+<table>
+  <thead><tr><th>Rev</th><th>Date</th><th>Description</th></tr></thead>
+  <tbody>
+    <tr><td class="mono">0</td><td class="mono">2026-10-10</td><td>Initial issue. Introduction, program schedule, Week 0 and Week 1.</td></tr>
+    <tr><td class="mono">1</td><td class="mono">2026-10-10</td><td>Added the study guide TM-MLIR-002 and links to it in the Week 0 reading tasks.</td></tr>
+  </tbody>
+</table>
+
+<h3>Applicability</h3>
+<p>This manual applies to one learner and one computer. The data in the table is from the date of issue.</p>
+<table>
+  <thead><tr><th>Item</th><th>Value at the date of issue</th></tr></thead>
+  <tbody>
+    <tr><td>Operating system</td><td>Windows 11 Home, 10.0.26200</td></tr>
+    <tr><td>Linux environment</td><td>Ubuntu 24.04.3 LTS on WSL2 (distribution name: <code>Ubuntu</code>)</td></tr>
+    <tr><td>Processor</td><td>16 logical processors</td></tr>
+    <tr><td>Memory</td><td>23.3 GB. WSL2 can use 11 GB (default limit).</td></tr>
+    <tr><td>GPU 1</td><td>NVIDIA GeForce RTX 5060 Laptop GPU. Driver 595.95, visible in WSL2.</td></tr>
+    <tr><td>GPU 2</td><td>AMD Radeon 780M Graphics (integrated)</td></tr>
+    <tr><td>Tools in WSL2</td><td><code>git</code> only. Week 0 installs the other tools.</td></tr>
+    <tr><td>C++ level</td><td>Not recent. Week 1 includes a C++ refresher.</td></tr>
+  </tbody>
+</table>
+
+<h3>Table of contents</h3>
+<ul class="toc">
+  <li><span class="mono">00-00-00</span><a href="#c-00-00">Introduction</a></li>
+  <li><span class="mono">00-10-00</span><a href="#c-00-10">Program schedule</a></li>
+  <li><span class="mono">00-20-00</span><a href="#c-00-20">Week 0 · Computer set-up</a></li>
+  <li><span class="mono">00-30-00</span><a href="#c-00-30">Week 0 · Background study</a></li>
+  <li><span class="mono">00-90-00</span><a href="#c-00-90">Week 0 · Check and record</a></li>
+  <li><span class="mono">01-00-00</span><a href="#c-01-00">Week 1 · Introduction</a></li>
+  <li><span class="mono">01-10-00</span><a href="#c-01-10">Week 1 · C++ refresher</a></li>
+  <li><span class="mono">01-20-00</span><a href="#c-01-20">Week 1 · LLVM IR from the command line</a></li>
+  <li><span class="mono">01-90-00</span><a href="#c-01-90">Week 1 · Check and record</a></li>
+  <li><span class="mono">REF</span><a href="#refs">List of references</a></li>
+</ul>
+
+<h3 id="refs">List of references</h3>
+<table>
+  <thead><tr><th>Ref</th><th>Title</th><th>Location</th></tr></thead>
+  <tbody>
+    <tr><td class="mono">R1</td><td>Democratizing AI Compute (series, C. Lattner, 2025)</td><td><a href="https://www.modular.com/democratizing-ai-compute">modular.com/democratizing-ai-compute</a></td></tr>
+    <tr><td class="mono">R2</td><td>The Architecture of Open Source Applications, chapter “LLVM” (C. Lattner)</td><td><a href="https://aosabook.org/en/v1/llvm.html">aosabook.org/en/v1/llvm.html</a></td></tr>
+    <tr><td class="mono">R3</td><td>Mojo manual, install procedure</td><td><a href="https://mojolang.org/docs/manual/install">mojolang.org/docs/manual/install</a></td></tr>
+    <tr><td class="mono">R4</td><td>MAX system requirements and GPU compatibility</td><td><a href="https://max.modular.com/packages">max.modular.com/packages</a></td></tr>
+    <tr><td class="mono">R5</td><td>Advanced settings configuration in WSL (.wslconfig)</td><td><a href="https://learn.microsoft.com/windows/wsl/wsl-config">learn.microsoft.com/windows/wsl/wsl-config</a></td></tr>
+    <tr><td class="mono">R6</td><td>Learn C++</td><td><a href="https://www.learncpp.com/">learncpp.com</a></td></tr>
+    <tr><td class="mono">R7</td><td>LLVM Programmer’s Manual, “The isa&lt;&gt;, cast&lt;&gt; and dyn_cast&lt;&gt; templates”</td><td><a href="https://llvm.org/docs/ProgrammersManual.html#the-isa-cast-and-dyn-cast-templates">llvm.org/docs/ProgrammersManual.html</a></td></tr>
+    <tr><td class="mono">R8</td><td>LLVM Coding Standards</td><td><a href="https://llvm.org/docs/CodingStandards.html">llvm.org/docs/CodingStandards.html</a></td></tr>
+    <tr><td class="mono">R9</td><td>LLVM for Grad Students (A. Sampson)</td><td><a href="https://www.cs.cornell.edu/~asampson/blog/llvm.html">cs.cornell.edu/~asampson/blog/llvm.html</a></td></tr>
+    <tr><td class="mono">R10</td><td>LLVM Language Reference Manual</td><td><a href="https://llvm.org/docs/LangRef.html">llvm.org/docs/LangRef.html</a></td></tr>
+    <tr><td class="mono">R11</td><td>opt, the LLVM optimizer (command guide)</td><td><a href="https://llvm.org/docs/CommandGuide/opt.html">llvm.org/docs/CommandGuide/opt.html</a></td></tr>
+    <tr><td class="mono">R12</td><td>Auto-Vectorization in LLVM</td><td><a href="https://llvm.org/docs/Vectorizers.html">llvm.org/docs/Vectorizers.html</a></td></tr>
+    <tr><td class="mono">R13</td><td>Compiler Explorer</td><td><a href="https://godbolt.org/">godbolt.org</a></td></tr>
+    <tr><td class="mono">R14</td><td>CMake tutorial</td><td><a href="https://cmake.org/cmake/help/latest/guide/tutorial/index.html">cmake.org/cmake/help/latest/guide/tutorial</a></td></tr>
+    <tr><td class="mono">R15</td><td>Kaleidoscope tutorial (Week 2)</td><td><a href="https://llvm.org/docs/tutorial/MyFirstLanguageFrontend/index.html">llvm.org/docs/tutorial/MyFirstLanguageFrontend</a></td></tr>
+    <tr><td class="mono">R16</td><td>Study guide TM-MLIR-002: digest of R1 and R2, primer, glossary</td><td><a href="study-guide.html">study-guide.html</a></td></tr>
+  </tbody>
+</table>
+<p class="noprint"><button type="button" class="btn" id="reset">Clear all step records</button></p>
+
+<!-- ============================================================ 00-00-00 -->
+<section class="chapter" id="c-00-00" data-section="00-00-00 · Introduction">
+  <header><span class="num">00-00-00</span><span class="wk">General</span></header>
+  <h2>Introduction</h2>
+
+  <h3>1. Purpose</h3>
+  <p>This manual gives a program of study for LLVM and MLIR. The program prepares you for the sessions about the Modular stack.</p>
+  <p>The Modular stack contains Mojo and MAX. Both use MLIR. The code then goes through LLVM to the CPU or the GPU.</p>
+
+  <h3>2. Scope</h3>
+  <p>This issue contains Week 0 and Week 1. Later revisions will add Week 2 to Week 13.</p>
+
+  <h3>3. How to use this manual</h3>
+  <ul>
+    <li>Do the tasks in the sequence that this manual gives.</li>
+    <li>Do all the steps of a task before you start the next task.</li>
+    <li>When you complete a step, select its box. This browser keeps the record.</li>
+    <li>Do the check at the end of each week. If an answer is incorrect, do the related task again.</li>
+  </ul>
+
+  <h3>4. Conventions</h3>
+  <table>
+    <caption>Table 1 · Conventions</caption>
+    <thead><tr><th>Symbol</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr><td><b style="color:var(--warn)">WARNING</b></td><td>An instruction that prevents loss of data or damage to the computer system.</td></tr>
+      <tr><td><b style="color:var(--caut)">CAUTION</b></td><td>An instruction that prevents incorrect results or loss of time.</td></tr>
+      <tr><td><b>NOTE</b></td><td>Information only. A note does not give an instruction.</td></tr>
+      <tr><td><span class="badge" style="background:#1e3a8a;color:#fff;border-color:#1e3a8a">PS</span></td><td>A command for Windows PowerShell.</td></tr>
+      <tr><td><span class="badge" style="background:#222;color:#fff;border-color:#222">WSL</span></td><td>A command for the Ubuntu shell in WSL2.</td></tr>
+      <tr><td><b>(1), (2)</b></td><td>Steps. Do the steps in sequence.</td></tr>
+      <tr><td><span class="tag">OPTIONAL</span></td><td>A step that is not necessary to complete the task.</td></tr>
+      <tr><td><b>R1, R2</b></td><td>A referenced document. Refer to the list of references.</td></tr>
+      <tr><td><code>mono</code></td><td>A command, a file name or a name in code.</td></tr>
+    </tbody>
+  </table>
+  <p>Each task has a number, for example <code>TASK 01-20-00-700-801</code>. The first three groups are the week, the section and the subject. The fourth group is the function code. The last group is the task sequence number.</p>
+  <table>
+    <caption>Table 2 · Function codes</caption>
+    <thead><tr><th>Code</th><th>Function</th></tr></thead>
+    <tbody>
+      <tr><td class="mono">200</td><td>Study. Read and examine.</td></tr>
+      <tr><td class="mono">400</td><td>Installation.</td></tr>
+      <tr><td class="mono">700</td><td>Practical exercise.</td></tr>
+      <tr><td class="mono">800</td><td>Check (self-test) and record.</td></tr>
+    </tbody>
+  </table>
+
+  <h3>5. Language standard</h3>
+  <p>This manual uses the rules of ASD-STE100 Simplified Technical English. Each step gives one instruction. Procedural sentences have a maximum of 20 words. Descriptive sentences have a maximum of 25 words.</p>
+
+  <h3>6. Description of the Modular stack</h3>
+  <p>Figure 1 shows the Modular stack in a simplified form. Each layer shows the weeks of this program that teach it. The hatched layers are in Week 1.</p>
+
+  <figure class="fig">
+    <svg viewBox="0 0 760 436" role="img" aria-labelledby="f1t">
+      <title id="f1t">Modular stack, simplified block diagram, with the weeks of the program</title>
+      <defs>
+        <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+          <path d="M0,0 L10,5 L0,10 z" fill="#161616"/>
+        </marker>
+        <pattern id="hatch" width="7" height="7" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+          <rect width="7" height="7" fill="#f4f9fc"/>
+          <line x1="0" y1="0" x2="0" y2="7" stroke="#0369a1" stroke-width="1.4" opacity=".28"/>
+        </pattern>
+      </defs>
+      <g font-family="B612, Arial, sans-serif" fill="#161616">
+        <!-- layer boxes -->
+        <g stroke="#161616" stroke-width="1.5">
+          <rect x="120" y="8"   width="480" height="44" fill="#fff"/>
+          <rect x="120" y="70"  width="480" height="44" fill="#fff"/>
+          <rect x="120" y="132" width="480" height="44" fill="#fff"/>
+          <rect x="120" y="194" width="480" height="44" fill="#fff"/>
+          <rect x="120" y="256" width="480" height="44" fill="url(#hatch)" stroke="#0369a1" stroke-width="2.2"/>
+          <rect x="120" y="318" width="480" height="44" fill="url(#hatch)" stroke="#0369a1" stroke-width="2.2"/>
+          <rect x="120" y="380" width="480" height="44" fill="#fff"/>
+        </g>
+        <!-- arrows -->
+        <g stroke="#161616" stroke-width="1.5" marker-end="url(#ar)">
+          <line x1="360" y1="52"  x2="360" y2="69"/>
+          <line x1="360" y1="114" x2="360" y2="131"/>
+          <line x1="360" y1="176" x2="360" y2="193"/>
+          <line x1="360" y1="238" x2="360" y2="255"/>
+          <line x1="360" y1="300" x2="360" y2="317"/>
+          <line x1="360" y1="362" x2="360" y2="379"/>
+        </g>
+        <!-- layer text -->
+        <g text-anchor="middle">
+          <text x="360" y="27"  font-size="13" font-weight="700">PYTHON APPLICATION</text>
+          <text x="360" y="44"  font-size="11">MAX Python API · model code</text>
+          <text x="360" y="89"  font-size="13" font-weight="700">MAX GRAPH COMPILER</text>
+          <text x="360" y="106" font-size="11">graph optimization and fusion · built on MLIR</text>
+          <text x="360" y="151" font-size="13" font-weight="700">MOJO</text>
+          <text x="360" y="168" font-size="11">language · standard library · CPU and GPU kernels</text>
+          <text x="360" y="213" font-size="13" font-weight="700">MLIR</text>
+          <text x="360" y="230" font-size="11">dialects · passes · progressive lowering</text>
+          <text x="360" y="275" font-size="13" font-weight="700">LLVM IR AND OPTIMIZER</text>
+          <text x="360" y="292" font-size="11">SSA form · passes · the -O2 pipeline</text>
+          <text x="360" y="337" font-size="13" font-weight="700">LLVM BACK ENDS</text>
+          <text x="360" y="354" font-size="11">X86 · AArch64 · NVPTX (NVIDIA) · AMDGPU (AMD)</text>
+          <text x="360" y="399" font-size="13" font-weight="700">HARDWARE</text>
+          <text x="360" y="416" font-size="11">CPU · NVIDIA RTX 5060 · AMD GPU</text>
+        </g>
+        <!-- callouts -->
+        <g stroke="#161616" stroke-width="1.2">
+          <line x1="83" y1="30"  x2="120" y2="30"/>
+          <line x1="83" y1="92"  x2="120" y2="92"/>
+          <line x1="83" y1="154" x2="120" y2="154"/>
+          <line x1="83" y1="216" x2="120" y2="216"/>
+          <line x1="83" y1="278" x2="120" y2="278"/>
+          <line x1="83" y1="340" x2="120" y2="340"/>
+          <line x1="83" y1="402" x2="120" y2="402"/>
+        </g>
+        <g fill="#fff" stroke="#161616" stroke-width="1.5">
+          <circle cx="70" cy="30"  r="13"/><circle cx="70" cy="92"  r="13"/><circle cx="70" cy="154" r="13"/>
+          <circle cx="70" cy="216" r="13"/><circle cx="70" cy="278" r="13"/><circle cx="70" cy="340" r="13"/>
+          <circle cx="70" cy="402" r="13"/>
+        </g>
+        <g text-anchor="middle" font-size="12" font-weight="700">
+          <text x="70" y="34">1</text><text x="70" y="96">2</text><text x="70" y="158">3</text>
+          <text x="70" y="220">4</text><text x="70" y="282">5</text><text x="70" y="344">6</text>
+          <text x="70" y="406">7</text>
+        </g>
+        <!-- week tags -->
+        <g stroke="#161616" stroke-width="1.2" fill="#fff">
+          <rect x="618" y="19"  width="128" height="22"/>
+          <rect x="618" y="81"  width="128" height="22"/>
+          <rect x="618" y="143" width="128" height="22"/>
+          <rect x="618" y="205" width="128" height="22"/>
+          <rect x="618" y="267" width="128" height="22" fill="#0369a1" stroke="#0369a1"/>
+          <rect x="618" y="329" width="128" height="22" fill="#0369a1" stroke="#0369a1"/>
+          <rect x="618" y="391" width="128" height="22"/>
+        </g>
+        <g text-anchor="middle" font-size="11" font-weight="700">
+          <text x="682" y="34">WEEK 12</text>
+          <text x="682" y="96">WEEK 12</text>
+          <text x="682" y="158">WEEKS 7–11</text>
+          <text x="682" y="220">WEEKS 4–6</text>
+          <text x="682" y="282" fill="#fff">WEEKS 1–3</text>
+          <text x="682" y="344" fill="#fff">WEEK 1</text>
+          <text x="682" y="406">WEEKS 10–11</text>
+        </g>
+      </g>
+    </svg>
+    <table class="key">
+      <thead><tr><th>Item</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td>1</td><td>The application. It uses the MAX Python API to make and run a model graph.</td></tr>
+        <tr><td>2</td><td>The MAX graph compiler. It optimizes the graph and fuses operations. It uses MLIR.</td></tr>
+        <tr><td>3</td><td>Mojo. The kernels of MAX are written in Mojo. The Mojo compiler uses MLIR.</td></tr>
+        <tr><td>4</td><td>MLIR. It contains many dialects. Passes lower the code from one dialect to a lower dialect.</td></tr>
+        <tr><td>5</td><td>LLVM IR. The LLVM optimizer applies passes to it.</td></tr>
+        <tr><td>6</td><td>The LLVM back ends. They make machine code for the CPU or code for the GPU.</td></tr>
+        <tr><td>7</td><td>The hardware. Your computer has an NVIDIA GPU, an AMD integrated GPU and an x86-64 CPU.</td></tr>
+      </tbody>
+    </table>
+    <figcaption>Figure 1 · Modular stack · simplified block diagram</figcaption>
+  </figure>
+</section>
+
+<!-- ============================================================ 00-10-00 -->
+<section class="chapter" id="c-00-10" data-section="00-10-00 · Program schedule">
+  <header><span class="num">00-10-00</span><span class="wk">General</span></header>
+  <h2>Program schedule</h2>
+  <p>The program has Week 0, twelve weeks of modules and a final project. Each week needs approximately 6 to 8 hours.</p>
+  <p>The LLVM module has three weeks. The first week includes a C++ refresher, because the LLVM and MLIR tutorials use C++.</p>
+
+  <table>
+    <caption>Table 3 · Program schedule</caption>
+    <thead><tr><th class="c">Week</th><th>Module</th><th>Subject</th><th>Main references</th><th>Output</th><th>Status</th></tr></thead>
+    <tbody>
+      <tr class="now"><td class="c mono">0</td><td>SET-UP</td><td>WSL2, compiler tools, Mojo check. Background reading.</td><td>R1 (Parts 1–4, 8), R2</td><td>A toolchain that operates. Notes on R1 and R2.</td><td><span class="badge now">This issue</span></td></tr>
+      <tr class="now"><td class="c mono">1</td><td>LLVM-1</td><td>C++ refresher. LLVM IR with clang and opt.</td><td>R6, R7, R9, R10</td><td><code>expr.cpp</code>. IR files for <code>sum</code>, <code>dot</code> and <code>dotf</code>.</td><td><span class="badge now">This issue</span></td></tr>
+      <tr><td class="c mono">2</td><td>LLVM-2</td><td>Kaleidoscope chapters 1–3: lexer, parser, IR generation.</td><td>R15</td><td>A front end that makes LLVM IR.</td><td><span class="badge later">Later revision</span></td></tr>
+      <tr><td class="c mono">3</td><td>LLVM-3</td><td>Kaleidoscope chapter 4: JIT and optimizer. Write an LLVM pass.</td><td>R15, “Writing an LLVM Pass”</td><td>A pass plugin for <code>opt</code>.</td><td><span class="badge later">Later revision</span></td></tr>
+      <tr><td class="c mono">4</td><td>MLIR-1</td><td>MLIR paper. Build MLIR from the source code. Toy chapters 1–2.</td><td>MLIR paper (CGO 2021), Toy tutorial</td><td>An MLIR build. <code>toyc-ch2</code>.</td><td><span class="badge later">Later revision</span></td></tr>
+      <tr><td class="c mono">5</td><td>MLIR-2</td><td>Toy chapters 3–4: rewrite patterns and interfaces.</td><td>Toy tutorial, “MLIR for Beginners” (J. Kun)</td><td>A rewrite pattern.</td><td><span class="badge later">Later revision</span></td></tr>
+      <tr><td class="c mono">6</td><td>MLIR-3</td><td>Toy chapters 5–6: lowering to affine and LLVM. A <code>linalg.matmul</code> exercise.</td><td>Toy tutorial, MLIR dialect documents</td><td>The IR of each lowering stage.</td><td><span class="badge later">Later revision</span></td></tr>
+      <tr><td class="c mono">7</td><td>MOJO-1</td><td>Mojo basics: structs, traits, ownership.</td><td>Mojo manual</td><td>Small Mojo programs.</td><td><span class="badge later">Later revision</span></td></tr>
+      <tr><td class="c mono">8</td><td>MOJO-2</td><td>Parameters, SIMD, MLIR in Mojo.</td><td>Mojo manual</td><td>A parametric SIMD function.</td><td><span class="badge later">Later revision</span></td></tr>
+      <tr><td class="c mono">9</td><td>MOJO-3</td><td>A matmul on the CPU: naive, vectorized, tiled, parallel.</td><td>Mojo manual</td><td>A benchmark table.</td><td><span class="badge later">Later revision</span></td></tr>
+      <tr><td class="c mono">10</td><td>GPU-1</td><td>GPU fundamentals. Mojo GPU Puzzles, first part.</td><td>PMPP chapters 1–6, Mojo GPU Puzzles</td><td>Solved puzzles.</td><td><span class="badge later">Later revision</span></td></tr>
+      <tr><td class="c mono">11</td><td>GPU-2</td><td>Mojo GPU Puzzles, second part, on the RTX 5060.</td><td>Mojo GPU Puzzles</td><td>A tiled GPU matmul.</td><td><span class="badge later">Later revision</span></td></tr>
+      <tr><td class="c mono">12</td><td>MAX</td><td>MAX graph API, a custom operation in Mojo, the MAX model server.</td><td>MAX documents</td><td>A custom operation in a MAX graph.</td><td><span class="badge later">Later revision</span></td></tr>
+      <tr><td class="c mono">13+</td><td>PROJECT</td><td>Final project. Select one of three options.</td><td>—</td><td>A project report.</td><td><span class="badge later">Later revision</span></td></tr>
+    </tbody>
+  </table>
+
+  <div class="note"><span class="nh">NOTE:</span>Mojo changes frequently. The Mojo documents are now at mojolang.org. If a blog post and the documents are different, the documents are correct.</div>
+  <div class="note"><span class="nh">NOTE:</span>Modular does not officially support Windows. Modular says that you can try MAX on WSL with a compatible Ubuntu version (R4).</div>
+  <div class="note"><span class="nh">NOTE:</span>R4 lists the RTX 50XX series as “known compatible for development”. R4 also requires NVIDIA driver 580 or later. Your driver is 595.95.</div>
+
+  <h3>Questions for the sessions</h3>
+  <p>Record these questions. Ask them in the sessions when the subject is related.</p>
+  <ol>
+    <li>How do Mojo parameters map to MLIR? When does the compiler resolve them, relative to the lowering?</li>
+    <li>How much does MAX use the upstream MLIR dialects, for example <code>linalg</code>? How much does it use its own dialects?</li>
+    <li>Where does MAX make the fusion decisions: in the graph compiler or in the Mojo kernels?</li>
+    <li>For GPU targets, which parts of the path go through LLVM? Which parts do not?</li>
+  </ol>
+</section>
+
+<!-- ============================================================ 00-20-00 -->
+<section class="chapter" id="c-00-20" data-section="00-20-00 · Week 0 · Computer set-up">
+  <header><span class="num">00-20-00</span><span class="wk">Week 0</span></header>
+  <h2>Computer set-up</h2>
+  <p>Week 0 prepares the computer and gives the background. If possible, do Week 0 before the first session.</p>
+
+  <!-- TASK 00-20-00-200-801 -->
+  <article class="task" id="t-00-20-00-200-801" data-task="00-20-00-200-801" data-week="0" data-title="Examine the WSL2 installation" data-time="5 min">
+    <div class="task-head"><span class="tno">TASK 00-20-00-200-801</span><span class="ttl">Examine the WSL2 installation</span><span class="time">5 min</span></div>
+    <div class="task-body">
+      <h4>1. General</h4>
+      <p>This task makes sure that Ubuntu operates on WSL2. The tools in this program need WSL2. WSL1 is not satisfactory.</p>
+      <h4>2. Job set-up information</h4>
+      <table>
+        <thead><tr><th>Tools and equipment</th><th>Referenced information</th></tr></thead>
+        <tbody><tr><td>Windows PowerShell</td><td>R5</td></tr></tbody>
+      </table>
+      <h4>3. Procedure</h4>
+      <ol class="steps">
+        <li class="step"><b class="n">(1)</b><div class="body">Open Windows PowerShell.</div></li>
+        <li class="step"><b class="n">(2)</b><div class="body">Show the WSL distributions:
+<pre class="cmd" data-sh="PS"><code>wsl -l -v</code></pre></div></li>
+        <li class="step"><b class="n">(3)</b><div class="body">Make sure that the line for <code>Ubuntu</code> shows <code>2</code> in the <code>VERSION</code> column.</div></li>
+        <li class="step"><b class="n">(4)</b><div class="body">Start Ubuntu:
+<pre class="cmd" data-sh="PS"><code>wsl -d Ubuntu</code></pre></div></li>
+        <li class="step"><b class="n">(5)</b><div class="body">Show the Ubuntu release:
+<pre class="cmd" data-sh="WSL"><code>lsb_release -ds</code></pre></div></li>
+        <li class="step"><b class="n">(6)</b><div class="body">Make sure that the release is Ubuntu 24.04 or later.</div></li>
+      </ol>
+      <div class="note"><span class="nh">NOTE:</span>At the date of this issue, the result was <code>Ubuntu 24.04.3 LTS</code> on WSL2. The <code>docker-desktop</code> line is for Docker Desktop. This program does not use it.</div>
+    </div>
+  </article>
+
+  <!-- TASK 00-20-00-400-801 -->
+  <article class="task" id="t-00-20-00-400-801" data-task="00-20-00-400-801" data-week="0" data-title="Increase the WSL2 memory limit" data-time="15 min">
+    <div class="task-head"><span class="tno">TASK 00-20-00-400-801</span><span class="ttl">Increase the WSL2 memory limit</span><span class="time">15 min</span></div>
+    <div class="task-body">
+      <h4>1. General</h4>
+      <p>By default, WSL2 can use 50 percent of the computer memory. On your computer, this is approximately 11 GB.</p>
+      <p>The MLIR build in Week 4 needs more memory. This task sets the limit to 16 GB. It also adds 16 GB of swap space.</p>
+      <div class="warning"><div class="wh">WARNING</div>
+        <p>DO NOT SET THE MEMORY LIMIT TO MORE THAN 18 GB. Windows must keep approximately 6 GB. If Windows has less memory, applications can stop.</p>
+      </div>
+      <div class="note"><span class="nh">NOTE:</span>This limit also applies to Docker Desktop, because Docker Desktop uses WSL2.</div>
+      <h4>2. Job set-up information</h4>
+      <table>
+        <thead><tr><th>Tools and equipment</th><th>Referenced information</th></tr></thead>
+        <tbody><tr><td>Windows PowerShell, Notepad</td><td>R5</td></tr></tbody>
+      </table>
+      <h4>3. Procedure</h4>
+      <ol class="steps">
+        <li class="step"><b class="n">(1)</b><div class="body">Open the file <code>.wslconfig</code> in Notepad:
+<pre class="cmd" data-sh="PS"><code>notepad "$env:USERPROFILE\.wslconfig"</code></pre></div></li>
+        <li class="step"><b class="n">(2)</b><div class="body">If Notepad asks to make a new file, select <b>Yes</b>.</div></li>
+        <li class="step"><b class="n">(3)</b><div class="body">Write these lines in the file:
+<pre class="code"><code>[wsl2]
+memory=16GB
+swap=16GB</code></pre></div></li>
+        <li class="step"><b class="n">(4)</b><div class="body">Save the file.</div></li>
+        <li class="step"><b class="n">(5)</b><div class="body">Close Notepad.</div></li>
+        <li class="step"><b class="n">(6)</b><div class="body">Stop WSL:
+<pre class="cmd" data-sh="PS"><code>wsl --shutdown</code></pre></div></li>
+        <li class="step"><b class="n">(7)</b><div class="body">Start Ubuntu:
+<pre class="cmd" data-sh="PS"><code>wsl -d Ubuntu</code></pre></div></li>
+        <li class="step"><b class="n">(8)</b><div class="body">Show the memory:
+<pre class="cmd" data-sh="WSL"><code>free -g</code></pre></div></li>
+        <li class="step"><b class="n">(9)</b><div class="body">Make sure that the <code>total</code> value in the <code>Mem</code> line is 15 or more.</div></li>
+        <li class="step"><b class="n">(10)</b><div class="body">Make sure that the <code>total</code> value in the <code>Swap</code> line is 15 or more.</div></li>
+      </ol>
+    </div>
+  </article>
+
+  <!-- TASK 00-20-00-400-802 -->
+  <article class="task" id="t-00-20-00-400-802" data-task="00-20-00-400-802" data-week="0" data-title="Install the compiler tools" data-time="20 min">
+    <div class="task-head"><span class="tno">TASK 00-20-00-400-802</span><span class="ttl">Install the compiler tools</span><span class="time">20 min</span></div>
+    <div class="task-body">
+      <h4>1. General</h4>
+      <p>This task installs Clang, LLVM and the build tools from the Ubuntu packages. Ubuntu 24.04 supplies LLVM 18.</p>
+      <p>Week 4 builds a newer LLVM and MLIR from the source code. LLVM 18 is satisfactory for Weeks 1 to 3.</p>
+      <div class="caution"><div class="wh">CAUTION</div>
+        <p>KEEP ALL WORK FILES IN THE LINUX FILE SYSTEM, FOR EXAMPLE IN <code>~/lab</code>. DO NOT KEEP WORK FILES IN <code>/mnt/c</code>. File operations in <code>/mnt/c</code> are much slower.</p>
+      </div>
+      <h4>2. Job set-up information</h4>
+      <table>
+        <thead><tr><th>Tools and equipment</th><th>Referenced information</th></tr></thead>
+        <tbody><tr><td>Ubuntu shell in WSL2, internet connection, your Ubuntu password (for <code>sudo</code>)</td><td>—</td></tr></tbody>
+      </table>
+      <table>
+        <caption>Packages that this task installs</caption>
+        <thead><tr><th>Package</th><th>Contents</th></tr></thead>
+        <tbody>
+          <tr><td><code>build-essential</code></td><td>GCC, make and the C library headers.</td></tr>
+          <tr><td><code>clang</code>, <code>lld</code></td><td>The Clang C and C++ compiler. The LLVM linker.</td></tr>
+          <tr><td><code>clangd</code></td><td>The language server for editors. It shows errors and completes names.</td></tr>
+          <tr><td><code>llvm</code></td><td><code>opt</code>, <code>llc</code> and the other LLVM tools.</td></tr>
+          <tr><td><code>llvm-dev</code></td><td>The LLVM headers and <code>llvm-config</code>. Week 2 uses them.</td></tr>
+          <tr><td><code>libclang-rt-18-dev</code></td><td>The sanitizer run-time libraries for Clang.</td></tr>
+          <tr><td><code>cmake</code>, <code>ninja-build</code></td><td>The build tools that LLVM and MLIR use.</td></tr>
+          <tr><td><code>graphviz</code></td><td>The <code>dot</code> command. It makes drawings of control flow graphs.</td></tr>
+        </tbody>
+      </table>
+      <h4>3. Procedure</h4>
+      <ol class="steps">
+        <li class="step"><b class="n">(1)</b><div class="body">Start Ubuntu.</div></li>
+        <li class="step"><b class="n">(2)</b><div class="body">Update the package index:
+<pre class="cmd" data-sh="WSL"><code>sudo apt update</code></pre></div></li>
+        <li class="step"><b class="n">(3)</b><div class="body">Install the packages:
+<pre class="cmd" data-sh="WSL"><code>sudo apt install -y build-essential clang clangd lld llvm llvm-dev libclang-rt-18-dev cmake ninja-build graphviz</code></pre></div></li>
+        <li class="step"><b class="n">(4)</b><div class="body">Show the tool versions:
+<pre class="cmd" data-sh="WSL"><code>clang --version
+opt --version
+llvm-config --version</code></pre></div></li>
+        <li class="step"><b class="n">(5)</b><div class="body">Make sure that the three tools show the same major version. Record the version.</div></li>
+        <li class="step"><b class="n">(6)</b><div class="body">Make the work directory for Week 1:
+<pre class="cmd" data-sh="WSL"><code>mkdir -p ~/lab/week-01</code></pre></div></li>
+      </ol>
+      <div class="note"><span class="nh">NOTE:</span>VS Code with the WSL extension can edit the files in WSL. In Ubuntu, the command <code>code .</code> opens the current directory. The clangd extension uses <code>clangd</code>.</div>
+    </div>
+  </article>
+
+  <!-- TASK 00-20-00-400-803 -->
+  <article class="task" id="t-00-20-00-400-803" data-task="00-20-00-400-803" data-week="0" data-title="Install Mojo (installation check)" data-time="20 min">
+    <div class="task-head"><span class="tno">TASK 00-20-00-400-803</span><span class="ttl">Install Mojo (installation check)</span><span class="time">20 min</span></div>
+    <div class="task-body">
+      <h4>1. General</h4>
+      <p>Weeks 7 to 12 use Mojo. This task makes sure now that Mojo installs and operates in WSL2. Thus, the Mojo weeks can start without delay.</p>
+      <div class="note"><span class="nh">NOTE:</span>The install procedure can change. At the date of this issue, the steps in this task agree with R3. If R3 and this task are different, R3 is correct.</div>
+      <h4>2. Job set-up information</h4>
+      <table>
+        <thead><tr><th>Tools and equipment</th><th>Referenced information</th></tr></thead>
+        <tbody><tr><td>Ubuntu shell in WSL2, internet connection</td><td>R3, R4</td></tr></tbody>
+      </table>
+      <h4>3. Procedure</h4>
+      <ol class="steps">
+        <li class="step"><b class="n">(1)</b><div class="body">Install the pixi package manager:
+<pre class="cmd" data-sh="WSL"><code>curl -fsSL https://pixi.sh/install.sh | sh</code></pre></div></li>
+        <li class="step"><b class="n">(2)</b><div class="body">Load the new <code>PATH</code>:
+<pre class="cmd" data-sh="WSL"><code>source ~/.bashrc</code></pre></div></li>
+        <li class="step"><b class="n">(3)</b><div class="body">Go to the lab directory:
+<pre class="cmd" data-sh="WSL"><code>cd ~/lab</code></pre></div></li>
+        <li class="step"><b class="n">(4)</b><div class="body">Make a Mojo project:
+<pre class="cmd" data-sh="WSL"><code>pixi init mojo-check -c https://conda.modular.com/max/ -c conda-forge</code></pre></div></li>
+        <li class="step"><b class="n">(5)</b><div class="body">Go to the project directory:
+<pre class="cmd" data-sh="WSL"><code>cd mojo-check</code></pre></div></li>
+        <li class="step"><b class="n">(6)</b><div class="body">Add the Mojo package:
+<pre class="cmd" data-sh="WSL"><code>pixi add mojo</code></pre></div></li>
+        <li class="step"><b class="n">(7)</b><div class="body">Show the Mojo version:
+<pre class="cmd" data-sh="WSL"><code>pixi run mojo --version</code></pre></div></li>
+        <li class="step"><b class="n">(8)</b><div class="body">Make sure that the command shows a version number.</div></li>
+        <li class="step"><b class="n">(9)</b><div class="body">Make the file <code>hello.mojo</code>:
+<pre class="cmd" data-sh="WSL"><code>cat > hello.mojo &lt;&lt;'EOF'
+def main():
+    print("Hello from Mojo")
+EOF</code></pre></div></li>
+        <li class="step"><b class="n">(10)</b><div class="body">Run the program:
+<pre class="cmd" data-sh="WSL"><code>pixi run mojo hello.mojo</code></pre></div></li>
+        <li class="step"><b class="n">(11)</b><div class="body">Make sure that the output is <code>Hello from Mojo</code>.</div></li>
+      </ol>
+      <div class="note"><span class="nh">NOTE:</span>This task does not use the GPU. Week 10 examines the GPU in WSL2.</div>
+    </div>
+  </article>
+</section>
+
+<!-- ============================================================ 00-30-00 -->
+<section class="chapter" id="c-00-30" data-section="00-30-00 · Week 0 · Background study">
+  <header><span class="num">00-30-00</span><span class="wk">Week 0</span></header>
+  <h2>Background study</h2>
+  <p>Chris Lattner wrote the two documents in this section. They give the reasons for the design of LLVM, MLIR and the Modular stack.</p>
+
+  <!-- TASK 00-30-00-200-801 -->
+  <article class="task" id="t-00-30-00-200-801" data-task="00-30-00-200-801" data-week="0" data-title="Read “Democratizing AI Compute”" data-time="90 min">
+    <div class="task-head"><span class="tno">TASK 00-30-00-200-801</span><span class="ttl">Read “Democratizing AI Compute”</span><span class="time">90 min</span></div>
+    <div class="task-body">
+      <h4>1. General</h4>
+      <p>Chris Lattner wrote this series in 2025. The series explains the problems of AI software today and the approach of Modular. It is the background for the sessions.</p>
+      <p>Week 0 needs five parts only. Read the other parts before the related sessions.</p>
+      <div class="note"><span class="nh">NOTE:</span>Document TM-MLIR-002 (<a href="study-guide.html">study-guide.html</a>) gives a digest of each part. You can read the digest first and then the original.</div>
+      <h4>2. Job set-up information</h4>
+      <table>
+        <thead><tr><th>Tools and equipment</th><th>Referenced information</th></tr></thead>
+        <tbody><tr><td>Web browser, a text editor</td><td>R1</td></tr></tbody>
+      </table>
+      <table>
+        <caption>Table 4 · Parts of the series</caption>
+        <thead><tr><th class="c">Part</th><th>Title</th><th>When to read</th></tr></thead>
+        <tbody>
+          <tr class="now"><td class="c">1</td><td>DeepSeek’s impact on AI</td><td>Week 0</td></tr>
+          <tr class="now"><td class="c">2</td><td>What exactly is “CUDA”?</td><td>Week 0</td></tr>
+          <tr class="now"><td class="c">3</td><td>How did CUDA succeed?</td><td>Week 0</td></tr>
+          <tr class="now"><td class="c">4</td><td>CUDA is the incumbent, but is it any good?</td><td>Week 0</td></tr>
+          <tr><td class="c">5</td><td>What about OpenCL and CUDA C++ alternatives?</td><td>Before the sessions</td></tr>
+          <tr><td class="c">6</td><td>What about TVM, XLA, and AI compilers?</td><td>Before the sessions</td></tr>
+          <tr><td class="c">7</td><td>What about Triton and Python eDSLs?</td><td>Before the sessions</td></tr>
+          <tr class="now"><td class="c">8</td><td>What about the MLIR compiler infrastructure?</td><td>Week 0</td></tr>
+          <tr><td class="c">9</td><td>Why do HW companies struggle to build AI software?</td><td>Before the sessions</td></tr>
+          <tr><td class="c">10</td><td>Modular’s bet to break out of the Matrix</td><td>Before the sessions</td></tr>
+          <tr><td class="c">11</td><td>How is Modular democratizing AI compute?</td><td>Before the sessions</td></tr>
+        </tbody>
+      </table>
+      <h4>3. Procedure</h4>
+      <ol class="steps">
+        <li class="step"><b class="n">(1)</b><div class="body">Open R1.</div></li>
+        <li class="step"><b class="n">(2)</b><div class="body">Read Part 1 to Part 4. These parts are about CUDA and its history.</div></li>
+        <li class="step"><b class="n">(3)</b><div class="body">Read Part 8. This part is about MLIR.</div></li>
+        <li class="step"><b class="n">(4)</b><div class="body">For each part that you read, write one sentence about its main idea. Write the sentences in <code>~/lab/notes.md</code>.</div></li>
+        <li class="step opt"><b class="n">(5)</b><div class="body"><span class="tag">BEFORE THE SESSIONS</span>Read the other parts in Table 4. Do step (4) for each part.</div></li>
+      </ol>
+    </div>
+  </article>
+
+  <!-- TASK 00-30-00-200-802 -->
+  <article class="task" id="t-00-30-00-200-802" data-task="00-30-00-200-802" data-week="0" data-title="Read “LLVM” in The Architecture of Open Source Applications" data-time="45 min">
+    <div class="task-head"><span class="tno">TASK 00-30-00-200-802</span><span class="ttl">Read “LLVM” in The Architecture of Open Source Applications</span><span class="time">45 min</span></div>
+    <div class="task-body">
+      <h4>1. General</h4>
+      <p>Chris Lattner wrote this chapter in 2011. It explains the three-phase design of a compiler and the LLVM IR. MLIR and Mojo use the same principles.</p>
+      <div class="note"><span class="nh">NOTE:</span>Document TM-MLIR-002 (<a href="study-guide.html#r-aosa">study-guide.html</a>) gives a digest of this chapter.</div>
+      <h4>2. Job set-up information</h4>
+      <table>
+        <thead><tr><th>Tools and equipment</th><th>Referenced information</th></tr></thead>
+        <tbody><tr><td>Web browser, paper and a pencil</td><td>R2</td></tr></tbody>
+      </table>
+      <h4>3. Procedure</h4>
+      <ol class="steps">
+        <li class="step"><b class="n">(1)</b><div class="body">Open R2.</div></li>
+        <li class="step"><b class="n">(2)</b><div class="body">Read all of the chapter.</div></li>
+        <li class="step"><b class="n">(3)</b><div class="body">On paper, draw the three-phase design from memory. Show the front ends, the optimizer and the back ends.</div></li>
+        <li class="step"><b class="n">(4)</b><div class="body">Compare your drawing with the figure in the chapter.</div></li>
+        <li class="step"><b class="n">(5)</b><div class="body">Write three sentences about the chapter in <code>~/lab/notes.md</code>.</div></li>
+      </ol>
+    </div>
+  </article>
+</section>
+
+<!-- ============================================================ 00-90-00 -->
+<section class="chapter" id="c-00-90" data-section="00-90-00 · Week 0 · Check and record">
+  <header><span class="num">00-90-00</span><span class="wk">Week 0</span></header>
+  <h2>Check and record</h2>
+
+  <article class="task" id="t-00-90-00-800-801" data-task="00-90-00-800-801" data-week="0" data-title="Week 0 check" data-time="15 min">
+    <div class="task-head"><span class="tno">TASK 00-90-00-800-801</span><span class="ttl">Week 0 check</span><span class="time">15 min</span></div>
+    <div class="task-body">
+      <h4>1. General</h4>
+      <p>This check makes sure that you know the important points of Week 0.</p>
+      <h4>2. Procedure</h4>
+      <ol class="steps">
+        <li class="step"><b class="n">(1)</b><div class="body">Write the answers to the questions in Table 5. Do not look at the answers.</div></li>
+        <li class="step"><b class="n">(2)</b><div class="body">Show the answers. Compare them with your answers.</div></li>
+        <li class="step"><b class="n">(3)</b><div class="body">If an answer is incorrect, do the related task again.</div></li>
+      </ol>
+      <h4>Table 5 · Week 0 questions</h4>
+      <details class="q"><summary><span class="qn">Q1</span>What are the three phases of a classic compiler?</summary>
+        <div class="a">The front end, the optimizer and the back end. The front end reads the source code and makes an IR. The optimizer improves the IR. The back end makes machine code for one target.</div></details>
+      <details class="q"><summary><span class="qn">Q2</span>A shared IR connects N languages to M targets. How many front ends and back ends are necessary?</summary>
+        <div class="a">N front ends and M back ends. Without a shared IR, you can need N × M different compilers.</div></details>
+      <details class="q"><summary><span class="qn">Q3</span>In Part 2 of R1, the word “CUDA” refers to more than one thing. Give three of them.</summary>
+        <div class="a">For example: the parallel programming model and its language (CUDA C++). The software platform: the compiler, the libraries (for example cuBLAS and cuDNN) and the tools. The ecosystem and the brand around them.</div></details>
+      <details class="q"><summary><span class="qn">Q4</span>Why was MLIR made?</summary>
+        <div class="a">Many AI frameworks and hardware companies made their own compilers and IRs. They did the same work many times. MLIR gives one shared infrastructure for many IRs. These IRs are the dialects.</div></details>
+      <details class="q"><summary><span class="qn">Q5</span>Which file sets the memory limit of WSL2? Which command shows the memory in Ubuntu?</summary>
+        <div class="a">The file <code>%UserProfile%\.wslconfig</code> sets the limit. The command <code>free -g</code> shows the memory.</div></details>
+      <details class="q"><summary><span class="qn">Q6</span>Which LLVM major version did <code>apt</code> install?</summary>
+        <div class="a">On Ubuntu 24.04, it is LLVM 18. Your result is in step (5) of TASK 00-20-00-400-802.</div></details>
+    </div>
+  </article>
+
+  <table class="record" data-week="0">
+    <caption>Record sheet · Week 0</caption>
+    <thead><tr><th>Task</th><th>Title</th><th>Time</th><th>Steps</th><th>Status</th><th>Date</th></tr></thead>
+    <tbody></tbody>
+  </table>
+</section>
+
+<!-- ============================================================ 01-00-00 -->
+<section class="chapter" id="c-01-00" data-section="01-00-00 · Week 1 · Introduction">
+  <header><span class="num">01-00-00</span><span class="wk">Week 1 · Module LLVM-1</span></header>
+  <h2>Week 1 · C++ refresher and LLVM IR</h2>
+  <p>Week 1 has two parts. Section 01-10-00 refreshes the C++ that the LLVM tutorials use. Section 01-20-00 shows LLVM IR with the command-line tools.</p>
+  <p>Section 01-20-00 does not need C++. It uses small C programs.</p>
+  <h3>Objectives</h3>
+  <p>At the end of Week 1, you can do these items:</p>
+  <ul>
+    <li>Read and write a small C++ class hierarchy that uses <code>std::unique_ptr</code>.</li>
+    <li>Build a C++ program with CMake and Ninja.</li>
+    <li>Read LLVM IR. Find the functions, basic blocks, instructions and phi nodes.</li>
+    <li>Use <code>opt</code> to apply one pass and the full <code>-O2</code> pipeline.</li>
+    <li>Find a vectorized loop in optimized LLVM IR. Explain why a floating-point loop does not vectorize.</li>
+  </ul>
+  <p>The total time is approximately 7 hours. The record sheet in 01-90-00 gives the time for each task.</p>
+  <div class="note"><span class="nh">NOTE:</span>Week 2 starts the Kaleidoscope tutorial (R15). Kaleidoscope uses the C++ of Section 01-10-00 and the same class names.</div>
+</section>
+
+<!-- ============================================================ 01-10-00 -->
+<section class="chapter" id="c-01-10" data-section="01-10-00 · Week 1 · C++ refresher">
+  <header><span class="num">01-10-00</span><span class="wk">Week 1 · Module LLVM-1</span></header>
+  <h2>C++ refresher</h2>
+
+  <!-- TASK 01-10-00-200-801 -->
+  <article class="task" id="t-01-10-00-200-801" data-task="01-10-00-200-801" data-week="1" data-title="Study the C++ subset that LLVM uses" data-time="2 h">
+    <div class="task-head"><span class="tno">TASK 01-10-00-200-801</span><span class="ttl">Study the C++ subset that LLVM uses</span><span class="time">2 h</span></div>
+    <div class="task-body">
+      <h4>1. General</h4>
+      <p>LLVM and MLIR have a large C++ code base. But the tutorials use a small subset of C++. This task refreshes that subset only.</p>
+      <p>Table 6 gives the subset. The last column shows where LLVM or MLIR uses each item.</p>
+      <h4>2. Job set-up information</h4>
+      <table>
+        <thead><tr><th>Tools and equipment</th><th>Referenced information</th></tr></thead>
+        <tbody><tr><td>Web browser</td><td>R6, R7, R8. Optional book: <i>A Tour of C++</i>, third edition (B. Stroustrup).</td></tr></tbody>
+      </table>
+      <table>
+        <caption>Table 6 · The C++ subset for Weeks 1 to 6</caption>
+        <thead><tr><th class="c">Item</th><th>Subject</th><th>What to know</th><th>Where LLVM or MLIR uses it</th></tr></thead>
+        <tbody>
+          <tr><td class="c">1</td><td>References and <code>const</code></td><td><code>const T &amp;</code> gives an object to a function without a copy.</td><td>Most of the LLVM API.</td></tr>
+          <tr><td class="c">2</td><td>Classes</td><td>Constructors, member initializer lists, <code>explicit</code>, <code>public</code> and <code>private</code>.</td><td>All AST nodes and IR objects.</td></tr>
+          <tr><td class="c">3</td><td>Inheritance and virtual functions</td><td><code>virtual</code>, <code>override</code>, pure virtual functions (<code>= 0</code>), virtual destructors.</td><td>The Kaleidoscope AST (Week 2).</td></tr>
+          <tr><td class="c">4</td><td>Smart pointers and move</td><td><code>std::unique_ptr</code>, <code>std::make_unique</code>, <code>std::move</code>. Each object has one owner.</td><td>The Kaleidoscope AST. <code>std::unique_ptr&lt;Module&gt;</code>.</td></tr>
+          <tr><td class="c">5</td><td>Standard containers</td><td><code>std::vector</code>, <code>std::map</code>, <code>std::string</code>.</td><td>Everywhere. LLVM also has <code>SmallVector</code>, <code>DenseMap</code> and <code>StringRef</code>.</td></tr>
+          <tr><td class="c">6</td><td><code>enum</code> and <code>enum class</code></td><td>Named integer constants.</td><td>The token types in Kaleidoscope.</td></tr>
+          <tr><td class="c">7</td><td>Templates (read only)</td><td>Read <code>Foo&lt;T&gt;</code>. Call template functions. You do not write templates in Week 1.</td><td><code>SmallVector&lt;Value *, 8&gt;</code>, <code>cast&lt;CallInst&gt;(I)</code>.</td></tr>
+          <tr><td class="c">8</td><td><code>auto</code>, range-based <code>for</code>, lambdas</td><td><code>for (auto &amp;BB : F)</code> and <code>[&amp;](int X) { ... }</code>.</td><td>Passes go through functions, blocks and instructions. MLIR uses <code>op-&gt;walk(...)</code>.</td></tr>
+          <tr><td class="c">9</td><td>LLVM-style RTTI</td><td><code>isa&lt;T&gt;(X)</code>, <code>cast&lt;T&gt;(X)</code>, <code>dyn_cast&lt;T&gt;(X)</code>. LLVM does not use <code>dynamic_cast</code>.</td><td>All LLVM and MLIR code.</td></tr>
+          <tr><td class="c">10</td><td>Build model</td><td>Header and source files. Compile, then link. CMake.</td><td>LLVM and MLIR build with CMake and Ninja (Week 4).</td></tr>
+        </tbody>
+      </table>
+      <h4>3. Procedure</h4>
+      <ol class="steps">
+        <li class="step"><b class="n">(1)</b><div class="body">Read Table 6.</div></li>
+        <li class="step"><b class="n">(2)</b><div class="body">For each item in Table 6 that you do not remember, read the related lessons in R6.</div></li>
+        <li class="step"><b class="n">(3)</b><div class="body">In R7, read the section “The isa&lt;&gt;, cast&lt;&gt; and dyn_cast&lt;&gt; templates”.</div></li>
+        <li class="step"><b class="n">(4)</b><div class="body">In R8, read the section about the names of types, functions and variables.</div></li>
+      </ol>
+      <div class="note"><span class="nh">NOTE:</span>LLVM names variables with an upper-case first letter, for example <code>LHS</code> and <code>Val</code>. The code in Week 1 uses the same style.</div>
+    </div>
+  </article>
+
+  <!-- TASK 01-10-00-700-801 -->
+  <article class="task" id="t-01-10-00-700-801" data-task="01-10-00-700-801" data-week="1" data-title="Write an expression tree in C++" data-time="90 min">
+    <div class="task-head"><span class="tno">TASK 01-10-00-700-801</span><span class="ttl">Write an expression tree in C++</span><span class="time">90 min</span></div>
+    <div class="task-body">
+      <h4>1. General</h4>
+      <p>This exercise uses items 2 to 6 of Table 6. The class names are the same as in the Kaleidoscope tutorial.</p>
+      <p>The program makes the tree for the expression <code>(x + 2) * 4</code>. Then it calculates the value and shows the expression. Figure 2 shows the tree.</p>
+
+      <figure class="fig">
+        <svg viewBox="0 0 640 248" role="img" aria-labelledby="f2t">
+          <title id="f2t">Expression tree for (x + 2) * 4</title>
+          <defs>
+            <marker id="ar2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M0,0 L10,5 L0,10 z" fill="#161616"/>
+            </marker>
+          </defs>
+          <g font-family="B612, Arial, sans-serif" fill="#161616">
+            <g stroke="#161616" stroke-width="1.5" marker-end="url(#ar2)">
+              <line x1="300" y1="56" x2="180" y2="99"/>
+              <line x1="340" y1="56" x2="460" y2="99"/>
+              <line x1="155" y1="146" x2="100" y2="189"/>
+              <line x1="195" y1="146" x2="280" y2="189"/>
+            </g>
+            <g font-size="11" font-weight="700" fill="#0369a1">
+              <text x="214" y="74">LHS</text>
+              <text x="404" y="74">RHS</text>
+              <text x="98" y="166">LHS</text>
+              <text x="246" y="166">RHS</text>
+            </g>
+            <g stroke="#161616" stroke-width="1.5" fill="#fff">
+              <rect x="235" y="10" width="170" height="46"/>
+              <rect x="90" y="100" width="170" height="46"/>
+              <rect x="380" y="100" width="170" height="46"/>
+              <rect x="10" y="190" width="170" height="46"/>
+              <rect x="200" y="190" width="170" height="46"/>
+            </g>
+            <g text-anchor="middle">
+              <text x="320" y="30" font-size="12.5" font-weight="700">BinaryExprAST</text>
+              <text x="320" y="47" font-size="11" font-family="B612 Mono, Consolas, monospace">Op = '*'</text>
+              <text x="175" y="120" font-size="12.5" font-weight="700">BinaryExprAST</text>
+              <text x="175" y="137" font-size="11" font-family="B612 Mono, Consolas, monospace">Op = '+'</text>
+              <text x="465" y="120" font-size="12.5" font-weight="700">NumberExprAST</text>
+              <text x="465" y="137" font-size="11" font-family="B612 Mono, Consolas, monospace">Val = 4</text>
+              <text x="95" y="210" font-size="12.5" font-weight="700">VariableExprAST</text>
+              <text x="95" y="227" font-size="11" font-family="B612 Mono, Consolas, monospace">Name = "x"</text>
+              <text x="285" y="210" font-size="12.5" font-weight="700">NumberExprAST</text>
+              <text x="285" y="227" font-size="11" font-family="B612 Mono, Consolas, monospace">Val = 2</text>
+            </g>
+            <text x="630" y="230" font-size="11" text-anchor="end" fill="#4a4a4a">Each arrow is a std::unique_ptr.</text>
+            <text x="630" y="244" font-size="11" text-anchor="end" fill="#4a4a4a">The parent owns the child.</text>
+          </g>
+        </svg>
+        <figcaption>Figure 2 · Expression tree for (x + 2) * 4</figcaption>
+      </figure>
+
+      <h4>2. Job set-up information</h4>
+      <table>
+        <thead><tr><th>Tools and equipment</th><th>Referenced information</th></tr></thead>
+        <tbody><tr><td>Ubuntu shell, <code>clang++</code>, a text editor</td><td>Table 6, R6</td></tr></tbody>
+      </table>
+      <div class="caution"><div class="wh">CAUTION</div>
+        <p>WRITE THE TODO PARTS YOURSELF. DO NOT OPEN FIGURE 4 BEFORE STEP (10). If you copy the solution, the exercise does not refresh your C++.</p>
+      </div>
+
+      <figure class="fig">
+<pre class="code"><code>// expr.cpp - Week 1 C++ refresher: an expression tree.
+// The class names match the Kaleidoscope tutorial (Week 2).
+#include &lt;cstdio&gt;
+#include &lt;map&gt;
+#include &lt;memory&gt;
+#include &lt;string&gt;
+#include &lt;utility&gt;
+
+using Env = std::map&lt;std::string, double&gt;;
+
+// Base class for all expression nodes.
+class ExprAST {
+public:
+  virtual ~ExprAST() = default;
+  virtual double eval(const Env &amp;E) const = 0;
+  virtual std::string str() const = 0;
+};
+
+// A number literal, for example "4".
+class NumberExprAST : public ExprAST {
+  double Val;
+
+public:
+  explicit NumberExprAST(double Val) : Val(Val) {}
+  double eval(const Env &amp;) const override { return Val; }
+  std::string str() const override {
+    char Buf[32];
+    std::snprintf(Buf, sizeof(Buf), "%g", Val);
+    return Buf;
+  }
+};
+
+// A variable reference, for example "x".
+class VariableExprAST : public ExprAST {
+  std::string Name;
+
+public:
+  explicit VariableExprAST(std::string Name) : Name(std::move(Name)) {}
+  double eval(const Env &amp;E) const override {
+    auto It = E.find(Name);
+    if (It == E.end()) {
+      std::fprintf(stderr, "error: unknown variable '%s'\n", Name.c_str());
+      return 0.0;
+    }
+    return It-&gt;second;
+  }
+  std::string str() const override { return Name; }
+};
+
+// A binary operation, for example "x + 2".
+class BinaryExprAST : public ExprAST {
+  char Op;
+  std::unique_ptr&lt;ExprAST&gt; LHS, RHS;
+
+public:
+  BinaryExprAST(char Op, std::unique_ptr&lt;ExprAST&gt; LHS,
+                std::unique_ptr&lt;ExprAST&gt; RHS)
+      : Op(Op), LHS(std::move(LHS)), RHS(std::move(RHS)) {}
+
+  double eval(const Env &amp;E) const override {
+    // TODO (step 6): Calculate LHS-&gt;eval(E) and RHS-&gt;eval(E).
+    //   Then apply Op. Support '+', '-', '*', '/' and '&lt;'.
+    //   For '&lt;', return 1.0 if the result is true, else 0.0.
+    (void)E;  // Remove these two lines when you write the code.
+    (void)Op;
+    return 0.0;
+  }
+
+  std::string str() const override {
+    // TODO (step 7): Return the text "(LHS Op RHS)", for example "(x + 2)".
+    return "?";
+  }
+};
+
+int main() {
+  // Make the tree for: (x + 2) * 4
+  auto Sum = std::make_unique&lt;BinaryExprAST&gt;(
+      '+', std::make_unique&lt;VariableExprAST&gt;("x"),
+      std::make_unique&lt;NumberExprAST&gt;(2));
+  std::unique_ptr&lt;ExprAST&gt; Root = std::make_unique&lt;BinaryExprAST&gt;(
+      '*', std::move(Sum), std::make_unique&lt;NumberExprAST&gt;(4));
+
+  Env E = {{"x", 3.0}};
+  std::printf("%s\n", Root-&gt;str().c_str());
+  std::printf("= %g\n", Root-&gt;eval(E));
+  return 0;
+}</code></pre>
+        <figcaption>Figure 3 · Skeleton of expr.cpp</figcaption>
+      </figure>
+
+      <h4>3. Procedure</h4>
+      <div class="subtask">SUBTASK 01-10-00-700-001<span>Write and compile the skeleton</span></div>
+      <ol class="steps">
+        <li class="step"><b class="n">(1)</b><div class="body">Go to the work directory:
+<pre class="cmd" data-sh="WSL"><code>cd ~/lab/week-01</code></pre></div></li>
+        <li class="step"><b class="n">(2)</b><div class="body">Make the file <code>expr.cpp</code> with the code from Figure 3.</div></li>
+        <li class="step"><b class="n">(3)</b><div class="body">Compile the program with the sanitizers:
+<pre class="cmd" data-sh="WSL"><code>clang++ -std=c++17 -g -Wall -Wextra -fsanitize=address,undefined expr.cpp -o expr</code></pre></div></li>
+        <li class="step"><b class="n">(4)</b><div class="body">Run the program:
+<pre class="cmd" data-sh="WSL"><code>./expr</code></pre></div></li>
+        <li class="step"><b class="n">(5)</b><div class="body">Make sure that the output is <code>?</code> on the first line and <code>= 0</code> on the second line.</div></li>
+      </ol>
+      <div class="subtask">SUBTASK 01-10-00-700-002<span>Complete the class BinaryExprAST</span></div>
+      <ol class="steps">
+        <li class="step"><b class="n">(6)</b><div class="body">Write the function <code>eval()</code> of <code>BinaryExprAST</code>. Obey the TODO comment.</div></li>
+        <li class="step"><b class="n">(7)</b><div class="body">Write the function <code>str()</code> of <code>BinaryExprAST</code>.</div></li>
+        <li class="step"><b class="n">(8)</b><div class="body">Compile the program again. Use the command in step (3).</div></li>
+        <li class="step"><b class="n">(9)</b><div class="body">Run the program.</div></li>
+        <li class="step"><b class="n">(10)</b><div class="body">Make sure that the output is:
+<pre class="code"><code>((x + 2) * 4)
+= 20</code></pre></div></li>
+        <li class="step"><b class="n">(11)</b><div class="body">Make sure that the sanitizers show no error messages.</div></li>
+        <li class="step"><b class="n">(12)</b><div class="body">In <code>main()</code>, change the value of <code>x</code> to 10. Then do steps (8) and (9) again.</div></li>
+        <li class="step"><b class="n">(13)</b><div class="body">Make sure that the result is <code>= 48</code>.</div></li>
+      </ol>
+      <div class="subtask">SUBTASK 01-10-00-700-003<span>Examine the ownership rule</span></div>
+      <ol class="steps">
+        <li class="step"><b class="n">(14)</b><div class="body">In the constructor of <code>BinaryExprAST</code>, change <code>LHS(std::move(LHS))</code> to <code>LHS(LHS)</code>.</div></li>
+        <li class="step"><b class="n">(15)</b><div class="body">Compile the program. Use the command in step (3).</div></li>
+        <li class="step"><b class="n">(16)</b><div class="body">Make sure that the compiler shows an error about a deleted copy constructor of <code>std::unique_ptr</code>.</div></li>
+        <li class="step"><b class="n">(17)</b><div class="body">Put <code>std::move</code> back in the constructor.</div></li>
+        <li class="step"><b class="n">(18)</b><div class="body">Compile the program. Make sure that the compiler shows no errors.</div></li>
+      </ol>
+      <div class="note"><span class="nh">NOTE:</span>A <code>std::unique_ptr</code> has only one owner. You cannot copy it. You can only move it to a new owner. The error in step (16) shows this rule.</div>
+      <div class="subtask">SUBTASK 01-10-00-700-004<span>Add a unary operator (optional)</span></div>
+      <ol class="steps">
+        <li class="step opt"><b class="n">(19)</b><div class="body"><span class="tag">OPTIONAL</span>Add the class <code>UnaryExprAST</code>. It has one operand and the operator <code>-</code> (minus).</div></li>
+        <li class="step opt"><b class="n">(20)</b><div class="body"><span class="tag">OPTIONAL</span>In <code>main()</code>, make the tree for <code>-(x + 2)</code>. Set <code>x</code> to 3.</div></li>
+        <li class="step opt"><b class="n">(21)</b><div class="body"><span class="tag">OPTIONAL</span>Make sure that the result is <code>= -5</code>.</div></li>
+      </ol>
+
+      <details class="solution">
+        <summary>Figure 4 · Reference solution for BinaryExprAST (open after step (10))</summary>
+<pre class="code"><code>class BinaryExprAST : public ExprAST {
+  char Op;
+  std::unique_ptr&lt;ExprAST&gt; LHS, RHS;
+
+public:
+  BinaryExprAST(char Op, std::unique_ptr&lt;ExprAST&gt; LHS,
+                std::unique_ptr&lt;ExprAST&gt; RHS)
+      : Op(Op), LHS(std::move(LHS)), RHS(std::move(RHS)) {}
+
+  double eval(const Env &amp;E) const override {
+    double L = LHS-&gt;eval(E);
+    double R = RHS-&gt;eval(E);
+    switch (Op) {
+    case '+': return L + R;
+    case '-': return L - R;
+    case '*': return L * R;
+    case '/': return L / R;
+    case '&lt;': return L &lt; R ? 1.0 : 0.0;
+    default:
+      std::fprintf(stderr, "error: unknown operator '%c'\n", Op);
+      return 0.0;
+    }
+  }
+
+  std::string str() const override {
+    return "(" + LHS-&gt;str() + " " + Op + " " + RHS-&gt;str() + ")";
+  }
+};</code></pre>
+      </details>
+    </div>
+  </article>
+
+  <!-- TASK 01-10-00-700-802 -->
+  <article class="task" id="t-01-10-00-700-802" data-task="01-10-00-700-802" data-week="1" data-title="Build the program with CMake and Ninja" data-time="20 min">
+    <div class="task-head"><span class="tno">TASK 01-10-00-700-802</span><span class="ttl">Build the program with CMake and Ninja</span><span class="time">20 min</span></div>
+    <div class="task-body">
+      <h4>1. General</h4>
+      <p>LLVM and MLIR use CMake to make the build files. Ninja then does the build. This task uses the same tools on <code>expr.cpp</code>.</p>
+      <h4>2. Job set-up information</h4>
+      <table>
+        <thead><tr><th>Tools and equipment</th><th>Referenced information</th></tr></thead>
+        <tbody><tr><td>Ubuntu shell, <code>cmake</code>, <code>ninja</code></td><td>R14</td></tr></tbody>
+      </table>
+      <figure class="fig">
+<pre class="code"><code>cmake_minimum_required(VERSION 3.20)
+project(Week01 LANGUAGES CXX)
+
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+add_executable(expr expr.cpp)
+target_compile_options(expr PRIVATE -Wall -Wextra)</code></pre>
+        <figcaption>Figure 5 · CMakeLists.txt</figcaption>
+      </figure>
+      <h4>3. Procedure</h4>
+      <ol class="steps">
+        <li class="step"><b class="n">(1)</b><div class="body">Go to the work directory:
+<pre class="cmd" data-sh="WSL"><code>cd ~/lab/week-01</code></pre></div></li>
+        <li class="step"><b class="n">(2)</b><div class="body">Make the file <code>CMakeLists.txt</code> with the code from Figure 5.</div></li>
+        <li class="step"><b class="n">(3)</b><div class="body">Make the build files:
+<pre class="cmd" data-sh="WSL"><code>cmake -S . -B build -G Ninja -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_EXPORT_COMPILE_COMMANDS=ON</code></pre></div></li>
+        <li class="step"><b class="n">(4)</b><div class="body">Build the program:
+<pre class="cmd" data-sh="WSL"><code>ninja -C build</code></pre></div></li>
+        <li class="step"><b class="n">(5)</b><div class="body">Run the program:
+<pre class="cmd" data-sh="WSL"><code>./build/expr</code></pre></div></li>
+        <li class="step"><b class="n">(6)</b><div class="body">Make sure that the output is the same as the output of <code>./expr</code>.</div></li>
+        <li class="step"><b class="n">(7)</b><div class="body">Make a link to the compilation database:
+<pre class="cmd" data-sh="WSL"><code>ln -s build/compile_commands.json .</code></pre></div></li>
+        <li class="step"><b class="n">(8)</b><div class="body">In <code>expr.cpp</code>, change the value of <code>x</code>.</div></li>
+        <li class="step"><b class="n">(9)</b><div class="body">Build the program again:
+<pre class="cmd" data-sh="WSL"><code>ninja -C build</code></pre></div></li>
+        <li class="step"><b class="n">(10)</b><div class="body">Make sure that Ninja shows one compile step and one link step only.</div></li>
+      </ol>
+      <div class="note"><span class="nh">NOTE:</span><code>clangd</code> reads <code>compile_commands.json</code>. Then the editor can show errors and complete names. The LLVM and MLIR builds make the same file.</div>
+    </div>
+  </article>
+</section>
+
+<!-- ============================================================ 01-20-00 -->
+<section class="chapter" id="c-01-20" data-section="01-20-00 · Week 1 · LLVM IR">
+  <header><span class="num">01-20-00</span><span class="wk">Week 1 · Module LLVM-1</span></header>
+  <h2>LLVM IR from the command line</h2>
+  <p>This section uses C, not C++. The tools are <code>clang</code> and <code>opt</code>.</p>
+  <p><code>clang</code> makes LLVM IR from C source code. <code>opt</code> applies passes to LLVM IR and writes the result. Figure 6 shows the files and the tools.</p>
+
+  <figure class="fig">
+    <svg viewBox="0 0 700 146" role="img" aria-labelledby="f6t">
+      <title id="f6t">Files and tools in Section 01-20-00</title>
+      <defs>
+        <marker id="ar6" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+          <path d="M0,0 L10,5 L0,10 z" fill="#161616"/>
+        </marker>
+      </defs>
+      <g font-family="B612 Mono, Consolas, monospace" fill="#161616">
+        <g stroke="#161616" stroke-width="1.5" fill="#fff">
+          <rect x="10" y="16" width="96" height="36"/>
+          <rect x="236" y="16" width="100" height="36"/>
+          <rect x="476" y="16" width="160" height="36"/>
+          <rect x="236" y="100" width="100" height="36"/>
+          <rect x="476" y="100" width="160" height="36"/>
+        </g>
+        <g stroke="#161616" stroke-width="1.5" marker-end="url(#ar6)">
+          <line x1="106" y1="34" x2="235" y2="34"/>
+          <line x1="336" y1="34" x2="475" y2="34"/>
+          <line x1="286" y1="52" x2="286" y2="99"/>
+          <line x1="556" y1="52" x2="556" y2="99"/>
+        </g>
+        <g text-anchor="middle" font-size="12.5" font-weight="700">
+          <text x="58" y="38">sum.c</text>
+          <text x="286" y="38">sum.ll</text>
+          <text x="556" y="38">sum.mem2reg.ll</text>
+          <text x="286" y="122">sum.O2.ll</text>
+          <text x="556" y="122">sum-cfg.svg</text>
+        </g>
+        <g font-size="10.5" fill="#0369a1">
+          <text x="171" y="27" text-anchor="middle">clang -O0 -emit-llvm</text>
+          <text x="406" y="27" text-anchor="middle">opt mem2reg</text>
+          <text x="296" y="80">opt default&lt;O2&gt;</text>
+          <text x="566" y="80">opt dot-cfg + dot</text>
+        </g>
+      </g>
+    </svg>
+    <figcaption>Figure 6 · Files and tools in Section 01-20-00</figcaption>
+  </figure>
+
+  <!-- TASK 01-20-00-200-801 -->
+  <article class="task" id="t-01-20-00-200-801" data-task="01-20-00-200-801" data-week="1" data-title="Study the structure of LLVM IR" data-time="60 min">
+    <div class="task-head"><span class="tno">TASK 01-20-00-200-801</span><span class="ttl">Study the structure of LLVM IR</span><span class="time">60 min</span></div>
+    <div class="task-body">
+      <h4>1. General</h4>
+      <p>LLVM IR is the code representation in the middle of LLVM. Mojo code also becomes LLVM IR before it becomes machine code.</p>
+      <p>Table 7 gives the important terms. Figure 7 shows a function in LLVM IR.</p>
+      <h4>2. Job set-up information</h4>
+      <table>
+        <thead><tr><th>Tools and equipment</th><th>Referenced information</th></tr></thead>
+        <tbody><tr><td>Web browser</td><td>R9, R10, R13 (optional)</td></tr></tbody>
+      </table>
+      <table>
+        <caption>Table 7 · LLVM IR terms</caption>
+        <thead><tr><th>Term</th><th>Definition</th></tr></thead>
+        <tbody>
+          <tr><td>Module</td><td>The top-level unit of LLVM IR. It contains global variables and functions. One source file usually gives one module.</td></tr>
+          <tr><td>Function</td><td>A list of basic blocks. The first block is the entry block.</td></tr>
+          <tr><td>Basic block</td><td>A sequence of instructions with one entry point. Only the last instruction can change the control flow.</td></tr>
+          <tr><td>Terminator</td><td>The last instruction of a basic block, for example <code>br</code> or <code>ret</code>.</td></tr>
+          <tr><td>Control flow graph (CFG)</td><td>The graph of the basic blocks of a function. Each edge is a possible jump from one block to a different block.</td></tr>
+          <tr><td>SSA form</td><td>Static single assignment. Each value has exactly one definition. A value does not change after its definition.</td></tr>
+          <tr><td>Phi node</td><td>An instruction at the start of a block. It selects a value that agrees with the previous block.</td></tr>
+          <tr><td>Virtual register</td><td>A name such as <code>%add</code>. LLVM IR has no limit on their number. The back end assigns real registers.</td></tr>
+          <tr><td>Dominance</td><td>Block A dominates block B when each path from the entry block to block B goes through block A.</td></tr>
+          <tr><td>Pass</td><td>A unit of work that examines or changes the IR, for example <code>mem2reg</code>.</td></tr>
+        </tbody>
+      </table>
+
+      <figure class="fig">
+<pre class="code nocopy"><code>define dso_local i32 @sum(i32 noundef %n) #0 {        <span class="co">1</span>
+entry:                                                 <span class="co">2</span>
+  br label %for.cond
+
+for.cond:                                         ; preds = %for.inc, %entry
+  %s.0 = phi i32 [ 0, %entry ], [ %add, %for.inc ]     <span class="co">3</span>
+  %i.0 = phi i32 [ 0, %entry ], [ %inc, %for.inc ]
+  %cmp = icmp slt i32 %i.0, %n                         <span class="co">4</span>
+  br i1 %cmp, label %for.body, label %for.end          <span class="co">5</span>
+
+for.body:                                         ; preds = %for.cond
+  %add = add nsw i32 %s.0, %i.0                        <span class="co">6</span>
+  br label %for.inc
+
+for.inc:                                          ; preds = %for.body
+  %inc = add nsw i32 %i.0, 1
+  br label %for.cond                                   <span class="co">7</span>
+
+for.end:                                          ; preds = %for.cond
+  ret i32 %s.0                                         <span class="co">8</span>
+}</code></pre>
+        <table class="key">
+          <thead><tr><th>Item</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td>1</td><td>The function definition. <code>%n</code> is the argument. <code>#0</code> refers to a group of attributes.</td></tr>
+            <tr><td>2</td><td>The entry block. The control starts here.</td></tr>
+            <tr><td>3</td><td>Phi nodes. <code>%s.0</code> is 0 when the control comes from <code>entry</code>. It is <code>%add</code> when the control comes from <code>for.inc</code>.</td></tr>
+            <tr><td>4</td><td>A compare instruction. <code>slt</code> means “signed less than”.</td></tr>
+            <tr><td>5</td><td>A conditional branch. This terminator goes to <code>for.body</code> or to <code>for.end</code>.</td></tr>
+            <tr><td>6</td><td>The loop body. <code>nsw</code> (no signed wrap) tells LLVM that a signed overflow does not occur.</td></tr>
+            <tr><td>7</td><td>The back edge. This branch goes back to the loop header. Thus, the blocks make a loop.</td></tr>
+            <tr><td>8</td><td>The return. <code>%s.0</code> is the value of <code>s</code> when the loop stops.</td></tr>
+          </tbody>
+        </table>
+        <figcaption>Figure 7 · The function sum in LLVM IR, after mem2reg (typical result)</figcaption>
+      </figure>
+      <div class="note"><span class="nh">NOTE:</span>On your computer, the names and the sequence of some lines can be different from Figure 7.</div>
+
+      <h4>3. Procedure</h4>
+      <ol class="steps">
+        <li class="step"><b class="n">(1)</b><div class="body">Read R9, “LLVM for Grad Students”.</div></li>
+        <li class="step"><b class="n">(2)</b><div class="body">Read the terms in Table 7.</div></li>
+        <li class="step"><b class="n">(3)</b><div class="body">Examine Figure 7. Find each item of the key in the code.</div></li>
+        <li class="step"><b class="n">(4)</b><div class="body">In R10, read the entries for the instructions <code>phi</code>, <code>br</code>, <code>icmp</code>, <code>alloca</code>, <code>load</code> and <code>store</code>.</div></li>
+        <li class="step opt"><b class="n">(5)</b><div class="body"><span class="tag">OPTIONAL</span>In R13, write the code of Figure 8. Select an x86-64 clang compiler. Add the options <code>-O1 -emit-llvm</code>.</div></li>
+      </ol>
+    </div>
+  </article>
+
+  <!-- TASK 01-20-00-700-801 -->
+  <article class="task" id="t-01-20-00-700-801" data-task="01-20-00-700-801" data-week="1" data-title="Make LLVM IR from C source code" data-time="30 min">
+    <div class="task-head"><span class="tno">TASK 01-20-00-700-801</span><span class="ttl">Make LLVM IR from C source code</span><span class="time">30 min</span></div>
+    <div class="task-body">
+      <h4>1. General</h4>
+      <p>Clang can stop after it makes LLVM IR. At <code>-O0</code>, Clang keeps each local variable in memory with <code>alloca</code>, <code>load</code> and <code>store</code>.</p>
+      <p>This keeps the front end simple. Later passes change these memory operations into SSA values.</p>
+      <h4>2. Job set-up information</h4>
+      <table>
+        <thead><tr><th>Tools and equipment</th><th>Referenced information</th></tr></thead>
+        <tbody><tr><td>Ubuntu shell, <code>clang</code>, a text editor</td><td>R10</td></tr></tbody>
+      </table>
+      <figure class="fig">
+<pre class="code"><code>// sum.c - Week 1: a simple loop.
+int sum(int n) {
+  int s = 0;
+  for (int i = 0; i &lt; n; i++)
+    s += i;
+  return s;
+}</code></pre>
+        <figcaption>Figure 8 · sum.c</figcaption>
+      </figure>
+      <h4>3. Procedure</h4>
+      <ol class="steps">
+        <li class="step"><b class="n">(1)</b><div class="body">Go to the work directory:
+<pre class="cmd" data-sh="WSL"><code>cd ~/lab/week-01</code></pre></div></li>
+        <li class="step"><b class="n">(2)</b><div class="body">Make the file <code>sum.c</code> with the code from Figure 8.</div></li>
+        <li class="step"><b class="n">(3)</b><div class="body">Make the LLVM IR:
+<pre class="cmd" data-sh="WSL"><code>clang -O0 -Xclang -disable-O0-optnone -fno-discard-value-names -S -emit-llvm sum.c -o sum.ll</code></pre>
+          <div class="note"><span class="nh">NOTE:</span><code>-disable-O0-optnone</code> removes the <code>optnone</code> attribute. Without this option, <code>opt</code> does not change <code>-O0</code> functions. <code>-fno-discard-value-names</code> keeps the variable names in the IR.</div></div></li>
+        <li class="step"><b class="n">(4)</b><div class="body">Open <code>sum.ll</code> in your editor.</div></li>
+        <li class="step"><b class="n">(5)</b><div class="body">Find the definition of the function <code>@sum</code>.</div></li>
+        <li class="step"><b class="n">(6)</b><div class="body">Find the <code>alloca</code> instructions in the entry block. Record the names of the three variables.</div></li>
+        <li class="step"><b class="n">(7)</b><div class="body">Find the <code>load</code> and <code>store</code> instructions in the loop.</div></li>
+        <li class="step"><b class="n">(8)</b><div class="body">Count the basic blocks in <code>@sum</code>. Record the number.</div></li>
+        <li class="step"><b class="n">(9)</b><div class="body">Count the lines that contain <code>optnone</code>:
+<pre class="cmd" data-sh="WSL"><code>grep -c optnone sum.ll</code></pre></div></li>
+        <li class="step"><b class="n">(10)</b><div class="body">Make sure that the command shows <code>0</code>.</div></li>
+      </ol>
+    </div>
+  </article>
+
+  <!-- TASK 01-20-00-700-802 -->
+  <article class="task" id="t-01-20-00-700-802" data-task="01-20-00-700-802" data-week="1" data-title="Apply the mem2reg pass and show the CFG" data-time="30 min">
+    <div class="task-head"><span class="tno">TASK 01-20-00-700-802</span><span class="ttl">Apply the mem2reg pass and show the CFG</span><span class="time">30 min</span></div>
+    <div class="task-body">
+      <h4>1. General</h4>
+      <p>The <code>mem2reg</code> pass changes local variables in memory into SSA values. It adds phi nodes where control paths join.</p>
+      <p>The <code>dot-cfg</code> pass writes the CFG of each function to a Graphviz file.</p>
+      <h4>2. Job set-up information</h4>
+      <table>
+        <thead><tr><th>Tools and equipment</th><th>Referenced information</th></tr></thead>
+        <tbody><tr><td>Ubuntu shell, <code>opt</code>, <code>dot</code>, a web browser</td><td>R11</td></tr></tbody>
+      </table>
+      <h4>3. Procedure</h4>
+      <ol class="steps">
+        <li class="step"><b class="n">(1)</b><div class="body">Apply the <code>mem2reg</code> pass:
+<pre class="cmd" data-sh="WSL"><code>opt -passes=mem2reg -S sum.ll -o sum.mem2reg.ll</code></pre></div></li>
+        <li class="step"><b class="n">(2)</b><div class="body">Compare the two files:
+<pre class="cmd" data-sh="WSL"><code>diff -u sum.ll sum.mem2reg.ll | less</code></pre></div></li>
+        <li class="step"><b class="n">(3)</b><div class="body">Count the memory instructions in the new file:
+<pre class="cmd" data-sh="WSL"><code>grep -cE 'alloca|load|store' sum.mem2reg.ll</code></pre></div></li>
+        <li class="step"><b class="n">(4)</b><div class="body">Make sure that the command shows <code>0</code>.</div></li>
+        <li class="step"><b class="n">(5)</b><div class="body">Find the phi nodes in the block <code>for.cond</code>. Compare them with Figure 7.</div></li>
+        <li class="step"><b class="n">(6)</b><div class="body">Write the CFG file:
+<pre class="cmd" data-sh="WSL"><code>opt -passes=dot-cfg -disable-output sum.mem2reg.ll</code></pre></div></li>
+        <li class="step"><b class="n">(7)</b><div class="body">Make sure that the file <code>.sum.dot</code> is in the directory:
+<pre class="cmd" data-sh="WSL"><code>ls -a</code></pre>
+          <div class="note"><span class="nh">NOTE:</span>The file name starts with a period. Thus, <code>ls</code> without <code>-a</code> does not show it.</div></div></li>
+        <li class="step"><b class="n">(8)</b><div class="body">Make an SVG drawing of the CFG:
+<pre class="cmd" data-sh="WSL"><code>dot -Tsvg .sum.dot -o sum-cfg.svg</code></pre></div></li>
+        <li class="step"><b class="n">(9)</b><div class="body">Open the directory in Windows Explorer:
+<pre class="cmd" data-sh="WSL"><code>explorer.exe .</code></pre></div></li>
+        <li class="step"><b class="n">(10)</b><div class="body">Open <code>sum-cfg.svg</code> in a web browser.</div></li>
+        <li class="step"><b class="n">(11)</b><div class="body">Find the edge from <code>for.inc</code> back to <code>for.cond</code>. This back edge makes the loop.</div></li>
+      </ol>
+    </div>
+  </article>
+
+  <!-- TASK 01-20-00-700-803 -->
+  <article class="task" id="t-01-20-00-700-803" data-task="01-20-00-700-803" data-week="1" data-title="Apply the -O2 pipeline and find the vectorized loop" data-time="60 min">
+    <div class="task-head"><span class="tno">TASK 01-20-00-700-803</span><span class="ttl">Apply the -O2 pipeline and find the vectorized loop</span><span class="time">60 min</span></div>
+    <div class="task-body">
+      <h4>1. General</h4>
+      <p><code>-O2</code> is a pipeline of many passes. In this task, you examine the pipeline.</p>
+      <p>Then you examine two results. LLVM removes the loop in <code>sum</code>. LLVM vectorizes the loop in <code>dot</code>.</p>
+      <h4>2. Job set-up information</h4>
+      <table>
+        <thead><tr><th>Tools and equipment</th><th>Referenced information</th></tr></thead>
+        <tbody><tr><td>Ubuntu shell, <code>clang</code>, <code>opt</code>, <code>dot</code></td><td>R11, R12</td></tr></tbody>
+      </table>
+      <figure class="fig">
+<pre class="code"><code>// dot.c - Week 1: dot product of two int arrays.
+int dot(const int *a, const int *b, int n) {
+  int s = 0;
+  for (int i = 0; i &lt; n; i++)
+    s += a[i] * b[i];
+  return s;
+}</code></pre>
+<pre class="code"><code>// dotf.c - Week 1: dot product of two float arrays.
+float dotf(const float *a, const float *b, int n) {
+  float s = 0.0f;
+  for (int i = 0; i &lt; n; i++)
+    s += a[i] * b[i];
+  return s;
+}</code></pre>
+        <figcaption>Figure 9 · dot.c and dotf.c</figcaption>
+      </figure>
+      <h4>3. Procedure</h4>
+      <div class="subtask">SUBTASK 01-20-00-700-001<span>Examine the -O2 pipeline</span></div>
+      <ol class="steps">
+        <li class="step"><b class="n">(1)</b><div class="body">Show the important passes of the <code>-O2</code> pipeline:
+<pre class="cmd" data-sh="WSL"><code>opt -passes='default&lt;O2&gt;' -print-pipeline-passes -disable-output sum.ll | tr ',' '\n' | grep -E 'inline|instcombine|licm|loop-vectorize'</code></pre></div></li>
+        <li class="step"><b class="n">(2)</b><div class="body">Make sure that the list contains <code>inline</code>, <code>instcombine</code>, <code>licm</code> and <code>loop-vectorize</code>.
+          <div class="note"><span class="nh">NOTE:</span>Some pass names have options in angle brackets after the name.</div></div></li>
+        <li class="step opt"><b class="n">(3)</b><div class="body"><span class="tag">OPTIONAL</span>Show each change that the pipeline makes. Find the first pass that changes <code>@sum</code>.
+<pre class="cmd" data-sh="WSL"><code>opt -passes='default&lt;O2&gt;' -print-changed -disable-output sum.ll 2&gt;&amp;1 | less</code></pre></div></li>
+      </ol>
+      <div class="subtask">SUBTASK 01-20-00-700-002<span>Optimize the loop in sum</span></div>
+      <ol class="steps">
+        <li class="step"><b class="n">(4)</b><div class="body">Apply the <code>-O2</code> pipeline:
+<pre class="cmd" data-sh="WSL"><code>opt -passes='default&lt;O2&gt;' -S sum.ll -o sum.O2.ll</code></pre></div></li>
+        <li class="step"><b class="n">(5)</b><div class="body">Find the function <code>@sum</code> in <code>sum.O2.ll</code>.</div></li>
+        <li class="step"><b class="n">(6)</b><div class="body">Find the <code>mul</code> instruction. LLVM changed the loop into a formula for the sum.</div></li>
+        <li class="step"><b class="n">(7)</b><div class="body">Write the CFG file again:
+<pre class="cmd" data-sh="WSL"><code>opt -passes=dot-cfg -disable-output sum.O2.ll</code></pre></div></li>
+        <li class="step"><b class="n">(8)</b><div class="body">Make the SVG drawing:
+<pre class="cmd" data-sh="WSL"><code>dot -Tsvg .sum.dot -o sum-O2-cfg.svg</code></pre></div></li>
+        <li class="step"><b class="n">(9)</b><div class="body">Open <code>sum-O2-cfg.svg</code> in a web browser.</div></li>
+        <li class="step"><b class="n">(10)</b><div class="body">Make sure that the drawing has no back edge.</div></li>
+      </ol>
+      <div class="note"><span class="nh">NOTE:</span>The scalar evolution analysis (SCEV) calculated the value of <code>s</code> at the end of the loop. Thus, LLVM did not need the loop.</div>
+      <div class="subtask">SUBTASK 01-20-00-700-003<span>Find the vectorized loop</span></div>
+      <ol class="steps">
+        <li class="step"><b class="n">(11)</b><div class="body">Make the file <code>dot.c</code> with the code from Figure 9.</div></li>
+        <li class="step"><b class="n">(12)</b><div class="body">Make the LLVM IR:
+<pre class="cmd" data-sh="WSL"><code>clang -O0 -Xclang -disable-O0-optnone -fno-discard-value-names -S -emit-llvm dot.c -o dot.ll</code></pre></div></li>
+        <li class="step"><b class="n">(13)</b><div class="body">Apply the <code>-O2</code> pipeline and show the vectorizer remarks:
+<pre class="cmd" data-sh="WSL"><code>opt -passes='default&lt;O2&gt;' -pass-remarks=loop-vectorize -S dot.ll -o dot.O2.ll</code></pre></div></li>
+        <li class="step"><b class="n">(14)</b><div class="body">Make sure that a remark contains <code>vectorized loop</code>. Record the vectorization width and the interleaved count.</div></li>
+        <li class="step"><b class="n">(15)</b><div class="body">Show the vector types in the result:
+<pre class="cmd" data-sh="WSL"><code>grep -oE '&lt;[0-9]+ x i32&gt;' dot.O2.ll | sort | uniq -c</code></pre></div></li>
+        <li class="step"><b class="n">(16)</b><div class="body">Find the call to <code>llvm.vector.reduce.add</code>. This call adds the vector lanes after the loop.</div></li>
+      </ol>
+      <div class="subtask">SUBTASK 01-20-00-700-004<span>Change int to float</span></div>
+      <ol class="steps">
+        <li class="step"><b class="n">(17)</b><div class="body">Make the file <code>dotf.c</code> with the code from Figure 9.</div></li>
+        <li class="step"><b class="n">(18)</b><div class="body">Make the LLVM IR:
+<pre class="cmd" data-sh="WSL"><code>clang -O0 -Xclang -disable-O0-optnone -fno-discard-value-names -S -emit-llvm dotf.c -o dotf.ll</code></pre></div></li>
+        <li class="step"><b class="n">(19)</b><div class="body">Apply the <code>-O2</code> pipeline and show the missed remarks:
+<pre class="cmd" data-sh="WSL"><code>opt -passes='default&lt;O2&gt;' -pass-remarks-missed=loop-vectorize -pass-remarks-analysis=loop-vectorize -disable-output dotf.ll</code></pre></div></li>
+        <li class="step"><b class="n">(20)</b><div class="body">Find the remark that starts with <code>loop not vectorized</code>. Record the reason.</div></li>
+        <li class="step"><b class="n">(21)</b><div class="body">Make the LLVM IR again with <code>-ffast-math</code>:
+<pre class="cmd" data-sh="WSL"><code>clang -O0 -Xclang -disable-O0-optnone -fno-discard-value-names -ffast-math -S -emit-llvm dotf.c -o dotf-fast.ll</code></pre></div></li>
+        <li class="step"><b class="n">(22)</b><div class="body">Apply the <code>-O2</code> pipeline and show the vectorizer remarks:
+<pre class="cmd" data-sh="WSL"><code>opt -passes='default&lt;O2&gt;' -pass-remarks=loop-vectorize -disable-output dotf-fast.ll</code></pre></div></li>
+        <li class="step"><b class="n">(23)</b><div class="body">Make sure that a remark contains <code>vectorized loop</code>.</div></li>
+      </ol>
+      <div class="note"><span class="nh">NOTE:</span>Floating-point addition is not associative. A different sequence of additions can give a slightly different result. <code>-ffast-math</code> permits the compiler to change the sequence. GPU kernels for AI must also make this decision.</div>
+    </div>
+  </article>
+</section>
+
+<!-- ============================================================ 01-90-00 -->
+<section class="chapter" id="c-01-90" data-section="01-90-00 · Week 1 · Check and record">
+  <header><span class="num">01-90-00</span><span class="wk">Week 1 · Module LLVM-1</span></header>
+  <h2>Check and record</h2>
+
+  <article class="task" id="t-01-90-00-800-801" data-task="01-90-00-800-801" data-week="1" data-title="Week 1 check and close-up" data-time="30 min">
+    <div class="task-head"><span class="tno">TASK 01-90-00-800-801</span><span class="ttl">Week 1 check and close-up</span><span class="time">30 min</span></div>
+    <div class="task-body">
+      <h4>1. General</h4>
+      <p>This check makes sure that you know the important points of Week 1. The close-up records your work in git.</p>
+      <h4>2. Procedure</h4>
+      <div class="subtask">SUBTASK 01-90-00-800-001<span>Self-test</span></div>
+      <ol class="steps">
+        <li class="step"><b class="n">(1)</b><div class="body">Write the answers to the questions in Table 8. Do not look at the answers.</div></li>
+        <li class="step"><b class="n">(2)</b><div class="body">Show the answers. Compare them with your answers.</div></li>
+        <li class="step"><b class="n">(3)</b><div class="body">If an answer is incorrect, do the related task again.</div></li>
+      </ol>
+      <h4>Table 8 · Week 1 questions</h4>
+      <details class="q"><summary><span class="qn">Q1</span>Why does the constructor of BinaryExprAST use std::move?</summary>
+        <div class="a">You cannot copy a <code>std::unique_ptr</code>. <code>std::move</code> moves the ownership of the child node into the member variable.</div></details>
+      <details class="q"><summary><span class="qn">Q2</span>Why does ExprAST have a virtual destructor?</summary>
+        <div class="a">The program deletes each node through a <code>std::unique_ptr&lt;ExprAST&gt;</code>. Without a virtual destructor, the destructor of the derived class does not run. The result is undefined behavior.</div></details>
+      <details class="q"><summary><span class="qn">Q3</span>What does CMAKE_EXPORT_COMPILE_COMMANDS=ON make? Which tool uses it?</summary>
+        <div class="a">It makes the file <code>compile_commands.json</code>. <code>clangd</code> uses it.</div></details>
+      <details class="q"><summary><span class="qn">Q4</span>How many basic blocks did @sum have at -O0? Give their names.</summary>
+        <div class="a">Five: <code>entry</code>, <code>for.cond</code>, <code>for.body</code>, <code>for.inc</code> and <code>for.end</code>.</div></details>
+      <details class="q"><summary><span class="qn">Q5</span>Why does Clang keep local variables in memory at -O0?</summary>
+        <div class="a">It keeps the front end simple. Clang does not have to make SSA form. Later, <code>mem2reg</code> (or <code>sroa</code> in <code>-O2</code>) makes the SSA form.</div></details>
+      <details class="q"><summary><span class="qn">Q6</span>What does %i.0 = phi i32 [ 0, %entry ], [ %inc, %for.inc ] do?</summary>
+        <div class="a">It selects 0 when the control comes from <code>entry</code>. It selects <code>%inc</code> when the control comes from <code>for.inc</code>.</div></details>
+      <details class="q"><summary><span class="qn">Q7</span>What did the -O2 pipeline do with the loop in @sum?</summary>
+        <div class="a">It removed the loop. SCEV calculated the result with a formula equal to n × (n − 1) / 2.</div></details>
+      <details class="q"><summary><span class="qn">Q8</span>Why did the float loop not vectorize without -ffast-math?</summary>
+        <div class="a">A vectorized reduction adds the values in a different sequence. Floating-point addition is not associative, thus the result can change. LLVM does not change the result without permission.</div></details>
+      <details class="q"><summary><span class="qn">Q9</span>What does LLVM use in place of dynamic_cast?</summary>
+        <div class="a"><code>isa&lt;&gt;</code>, <code>cast&lt;&gt;</code> and <code>dyn_cast&lt;&gt;</code>. Each class gives a <code>classof()</code> function. LLVM does not use the C++ RTTI.</div></details>
+      <details class="q"><summary><span class="qn">Q10</span>Which LLVM back end makes code for NVIDIA GPUs?</summary>
+        <div class="a">NVPTX. It makes PTX code. Then <code>ptxas</code> or the NVIDIA driver changes the PTX code into machine code for the GPU.</div></details>
+
+      <div class="subtask">SUBTASK 01-90-00-800-002<span>Close-up</span></div>
+      <ol class="steps">
+        <li class="step"><b class="n">(4)</b><div class="body">Write five lines in <code>~/lab/notes.md</code> about the new items in Week 1.</div></li>
+        <li class="step"><b class="n">(5)</b><div class="body">Go to the lab directory:
+<pre class="cmd" data-sh="WSL"><code>cd ~/lab</code></pre></div></li>
+        <li class="step"><b class="n">(6)</b><div class="body">If <code>~/lab</code> is not a git repository, make it a repository:
+<pre class="cmd" data-sh="WSL"><code>git init</code></pre></div></li>
+        <li class="step"><b class="n">(7)</b><div class="body">Tell git not to record the build directories:
+<pre class="cmd" data-sh="WSL"><code>echo 'build/' &gt;&gt; .gitignore</code></pre></div></li>
+        <li class="step"><b class="n">(8)</b><div class="body">If git does not know your name and e-mail address, set them:
+<pre class="cmd" data-sh="WSL"><code>git config --global user.name "Your Name"
+git config --global user.email "you@example.com"</code></pre></div></li>
+        <li class="step"><b class="n">(9)</b><div class="body">Record the work in git:
+<pre class="cmd" data-sh="WSL"><code>git add -A
+git commit -m "Week 1: C++ refresher and LLVM IR"</code></pre></div></li>
+      </ol>
+    </div>
+  </article>
+
+  <table class="record" data-week="1">
+    <caption>Record sheet · Week 1</caption>
+    <thead><tr><th>Task</th><th>Title</th><th>Time</th><th>Steps</th><th>Status</th><th>Date</th></tr></thead>
+    <tbody></tbody>
+  </table>
+
+  <div class="next"><b>NEXT REVISION:</b> Revision 1 will add Week 2. Week 2 starts the Kaleidoscope tutorial (R15), chapters 1 to 3: the lexer, the parser and the IR generation with the LLVM C++ API.</div>
+</section>
+
+<p class="end">END OF ISSUE 1 · REVISION 1</p>
+
+</main>
+
+<script>
+(function () {
+  'use strict';
+  var KEY = 'tm-mlir-001:v1';
+  var state;
+  try { state = JSON.parse(localStorage.getItem(KEY)) || {}; } catch (e) { state = {}; }
+  state.steps = state.steps || {};
+  state.done = state.done || {};
+
+  function save() {
+    try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) { /* storage unavailable */ }
+  }
+  function today() {
+    var d = new Date();
+    return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+  }
+  function counts(task) {
+    return [
+      task.querySelectorAll('li.step:not(.opt).done').length,
+      task.querySelectorAll('li.step:not(.opt)').length
+    ];
+  }
+  function update(task) {
+    var id = task.dataset.task;
+    var c = counts(task);
+    var complete = c[1] > 0 && c[0] === c[1];
+    if (complete && !state.done[id]) state.done[id] = today();
+    if (!complete) delete state.done[id];
+    var so = task.querySelector('.signoff');
+    so.classList.toggle('complete', complete);
+    so.innerHTML = '<span>Steps complete: ' + c[0] + ' / ' + c[1] + '</span><span>' +
+      (complete ? 'Task complete · ' + state.done[id] : 'Task open') + '</span>';
+  }
+
+  var tasks = Array.prototype.slice.call(document.querySelectorAll('.task[data-task]'));
+
+  function refresh() {
+    var all = document.querySelectorAll('li.step:not(.opt)').length;
+    var done = document.querySelectorAll('li.step:not(.opt).done').length;
+    document.getElementById('progress-bar').style.width = (all ? 100 * done / all : 0) + '%';
+    document.getElementById('progress-label').textContent = done + ' / ' + all + ' steps';
+    document.querySelectorAll('table.record').forEach(function (tbl) {
+      var rows = '';
+      tasks.filter(function (t) { return t.dataset.week === tbl.dataset.week; }).forEach(function (t) {
+        var c = counts(t), id = t.dataset.task, date = state.done[id];
+        rows += '<tr' + (date ? ' class="ok"' : '') + '>' +
+          '<td class="mono"><a href="#' + t.id + '">' + id + '</a></td>' +
+          '<td>' + t.dataset.title + '</td>' +
+          '<td>' + t.dataset.time + '</td>' +
+          '<td>' + c[0] + ' / ' + c[1] + '</td>' +
+          '<td>' + (date ? 'COMPLETE' : 'OPEN') + '</td>' +
+          '<td class="mono">' + (date || '—') + '</td></tr>';
+      });
+      tbl.tBodies[0].innerHTML = rows;
+    });
+  }
+
+  tasks.forEach(function (task) {
+    var id = task.dataset.task;
+    task.querySelectorAll('li.step').forEach(function (li) {
+      var n = li.querySelector('.n').textContent.trim();
+      var key = id + ':' + n;
+      var cb = document.createElement('input');
+      cb.type = 'checkbox';
+      cb.setAttribute('aria-label', 'Step ' + n + ' complete');
+      cb.checked = !!state.steps[key];
+      li.classList.toggle('done', cb.checked);
+      cb.addEventListener('change', function () {
+        if (cb.checked) state.steps[key] = 1; else delete state.steps[key];
+        li.classList.toggle('done', cb.checked);
+        update(task);
+        save();
+        refresh();
+      });
+      li.insertBefore(cb, li.firstChild);
+    });
+    var so = document.createElement('div');
+    so.className = 'signoff';
+    task.appendChild(so);
+    update(task);
+  });
+  save();
+  refresh();
+
+  // Copy buttons for commands and listings.
+  function fallbackCopy(text) {
+    var ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.position = 'fixed';
+    ta.style.opacity = '0';
+    document.body.appendChild(ta);
+    ta.select();
+    try { document.execCommand('copy'); } catch (e) { /* ignore */ }
+    document.body.removeChild(ta);
+  }
+  document.querySelectorAll('pre.cmd, pre.code:not(.nocopy)').forEach(function (pre) {
+    var b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'copy';
+    b.textContent = 'Copy';
+    b.addEventListener('click', function () {
+      var text = pre.querySelector('code').textContent.replace(/\s+$/, '') + '\n';
+      var done = function () { b.textContent = 'Copied'; setTimeout(function () { b.textContent = 'Copy'; }, 1200); };
+      if (navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard.writeText(text).then(done, function () { fallbackCopy(text); done(); });
+      } else {
+        fallbackCopy(text);
+        done();
+      }
+    });
+    pre.appendChild(b);
+  });
+
+  // Running header: show the current section.
+  var mid = document.getElementById('runhead-section');
+  if ('IntersectionObserver' in window) {
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) { if (e.isIntersecting) mid.textContent = e.target.dataset.section; });
+    }, { rootMargin: '-12% 0px -80% 0px' });
+    document.querySelectorAll('[data-section]').forEach(function (s) { io.observe(s); });
+  }
+
+  document.getElementById('reset').addEventListener('click', function () {
+    if (confirm('Clear all step records in this browser?')) {
+      localStorage.removeItem(KEY);
+      location.reload();
+    }
+  });
+})();
+</script>
+</body>
+</html>
