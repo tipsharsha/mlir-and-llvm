@@ -1,8 +1,8 @@
 import os, sys
 os.environ["TRITON_INTERPRET"] = "1"
-sys.path.insert(0, os.environ.get("OKC_DIR", os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+sys.path[:0] = [os.path.dirname(os.path.dirname(os.path.abspath(__file__))), os.environ.get("OKC_DIR", ".")]  # this submission, then okc init's reference.py and nvfp4.py
 import torch
-import fp8fix
+import fp8fix  # noqa: F401  (patches the interpreter)
 import submission as S
 
 torch.manual_seed(0)

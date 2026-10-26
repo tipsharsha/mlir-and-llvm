@@ -1,5 +1,5 @@
 import os, sys; os.environ["TRITON_INTERPRET"]="1"
-sys.path.insert(0, os.environ.get("OKC_DIR", os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+sys.path[:0] = [os.path.dirname(os.path.dirname(os.path.abspath(__file__))), os.environ.get("OKC_DIR", ".")]  # this submission, then okc init's reference.py and nvfp4.py
 import torch, submission as S
 torch.manual_seed(0)
 for (m, n, k, cfg) in [(1, 64, 512, (16, 32, 128, 2, 3, 4)), (5, 128, 1024, (16, 64, 256, 4, 3, 4)),

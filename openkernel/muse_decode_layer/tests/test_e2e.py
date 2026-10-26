@@ -1,7 +1,7 @@
 import os, sys; os.environ["TRITON_INTERPRET"]="1"
-sys.path.insert(0, os.environ.get("OKC_DIR", os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+sys.path[:0] = [os.path.dirname(os.path.dirname(os.path.abspath(__file__))), os.environ.get("OKC_DIR", ".")]  # this submission, then okc init's reference.py and nvfp4.py
 import torch
-import fp8fix
+import fp8fix  # noqa: F401  (patches the interpreter)
 torch.cuda.synchronize = lambda *a, **k: None
 import submission as S, reference as R
 _mm0 = torch.mm
@@ -10,26 +10,7 @@ def _mm_shim(a, b, *, out_dtype=None):
 torch.mm = _mm_shim
 from nvfp4 import dequantize
 
-def fake_fa3(q, k_cache, v_cache, page_table, cache_seqlens, cu_seqlens_q, max_seqlen_q, softmax_scale,
-             causal, window_size, scheduler_metadata=None, k_descale=None, v_descale=None):
-    T = q.shape[0]; L = max_seqlen_q; B = T // L
-    page = k_cache.shape[1]
-    ks = 1.0 if k_descale is None else float(k_descale[0, 0]); vs = 1.0 if v_descale is None else float(v_descale[0, 0])
-    kf = k_cache.view(-1, 2, 64); vf = v_cache.view(-1, 2, 64)
-    out = torch.empty(T, 16, 64)
-    for b in range(B):
-        n = int(cache_seqlens[b]); t = torch.arange(n)
-        rows = page_table[b].long()[t // page] * page + t % page
-        K = kf[rows].float() * ks; V = vf[rows].float() * vs
-        for i in range(L):
-            qp = n - L + i
-            vis = t <= qp
-            if window_size[0] >= 0: vis &= t >= qp - window_size[0]
-            qq = q[b * L + i].float().view(2, 8, 64)
-            att = torch.einsum("kgd,skd->kgs", qq, K) * softmax_scale
-            att = att.masked_fill(~vis[None, None], float("-inf")).softmax(-1)
-            out[b * L + i] = torch.einsum("kgs,skd->kgd", att, V).reshape(16, 64)
-    return out.bfloat16()
+from fakes import fake_fa3
 
 W = None
 def fake_experts(x, tw, lid, state):
@@ -46,17 +27,24 @@ def fake_experts(x, tw, lid, state):
         out.index_add_(0, tok, y * tw[tok, slot, None])
     return out.bfloat16()
 
-S.flash_attn_with_kvcache = fake_fa3
+# The Triton attention by default; E2E_FA3=1 runs FA3's stand-in instead.
+S.flash_attn_with_kvcache = fake_fa3 if os.environ.get("E2E_FA3") else None
+S._tune_attn = lambda device: {}
 S._experts = fake_experts
 S._marlin_bank = lambda w: None
-S._tune = lambda mats, device: {}
+# Force the Triton paths (the GPU picks by timing): the first split-K candidate per GEMM, and the
+# Triton experts at every token count.
+S._tune = lambda mats, device: {(name, m): S._candidates(m, *w.shape)[0]
+                                for name, (w, ms) in mats.items() for m in ms}
+S._tune_moe = lambda state, device: {m: (32, 64, 2, 4) for m in S.MOE_TUNE_TOKENS}
 W = R.generate_weights(5353, device="cpu")
 state = S.prepare(W)
 cases = [dict(batch=1, ctx=10, layer="sliding"),
          dict(batch=3, ctx=300, layer="full", q_len=8, dist="outliers"),
          dict(batch=4, ctx=700, layer="sliding", q_len=8, page=1, kv_scale=0.015625),
          dict(batch=9, ctx=500, layer="sliding", spread="mixed", page=1),
-         dict(batch=2, ctx=3000, layer="sliding", q_len=1)]
+         dict(batch=2, ctx=3000, layer="sliding", q_len=1),
+         dict(batch=5, ctx=400, layer="sliding", q_len=8, spread="mixed", page=1)]
 for i, c in enumerate(cases):
     c = {**c, "seed": 100 + i, "device": "cpu"}
     ls = R.case_fields(c, W)["local_start"]
